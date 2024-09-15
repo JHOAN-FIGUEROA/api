@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
 // Configuración de rutas
 app.use('/proveedores', proveedorRoutes);
 app.use('/clientes', clienteRoutes);
-app.use('/ProductoServicios', productoRoutes);
+app.use('/Productos', productoRoutes);
 app.use('/compras', compraRoutes);
 app.use('/ventas', ventaRoutes);
 app.use('/Usuarios', usuarioRoutes); // Asegúrate de que este prefijo coincida con el usado en `routes/usuarioRoutes.js`
