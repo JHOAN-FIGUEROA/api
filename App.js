@@ -22,6 +22,11 @@ const compraRoutes = require('./routes/compraRoutes');
 const ventaRoutes = require('./routes/ventaRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 
+
+
+
+
+
 // Rutas principales
 app.get('/', (req, res) => {
   res.send('Bienvenido a mi API');
