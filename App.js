@@ -10,6 +10,9 @@ const port = process.env.PORT || 3000;
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(cors({
+  origin: 'http://localhost:5173', // La URL de tu frontend local
+}));
 
 // Importación de rutas
 const proveedorRoutes = require('./routes/proveedorRoutes');
