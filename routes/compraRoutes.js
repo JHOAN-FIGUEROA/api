@@ -11,7 +11,7 @@ const {
 // Obtener todas las compras
 router.get('/', async (req, res) => {
   try {
-    const compras = await getCompras();
+    const compras = await getCompras(req, res);
     res.json(compras);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener las compras.' });
@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 // Crear una nueva compra
 router.post('/', async (req, res) => {
   try {
-    const nuevaCompra = await createCompra(req.body);
+    const nuevaCompra = await createCompra(req, res);
     res.status(201).json(nuevaCompra);
   } catch (error) {
     res.status(500).json({ message: 'Error al crear la compra.' });
@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
 // Obtener una compra por ID
 router.get('/:id', async (req, res) => {
   try {
-    const compra = await getCompraById(req.params.id);
+    const compra = await getCompraById(req, res);
     if (compra) {
       res.json(compra);
     } else {
@@ -45,7 +45,7 @@ router.get('/:id', async (req, res) => {
 // Actualizar una compra existente
 router.put('/:id', async (req, res) => {
   try {
-    const compraActualizada = await updateCompra(req.params.id, req.body);
+    const compraActualizada = await updateCompra(req, res);
     if (compraActualizada) {
       res.json(compraActualizada);
     } else {
@@ -59,7 +59,7 @@ router.put('/:id', async (req, res) => {
 // Anular una compra existente
 router.patch('/:id/anular', async (req, res) => {
   try {
-    const compraAnulada = await anularCompra(req.params.id);
+    const compraAnulada = await anularCompra(req, res);
     if (compraAnulada) {
       res.json(compraAnulada);
     } else {
@@ -71,3 +71,4 @@ router.patch('/:id/anular', async (req, res) => {
 });
 
 module.exports = router;
+
