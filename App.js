@@ -39,7 +39,7 @@ app.use('/clientes', clienteRoutes);
 app.use('/productos', productoRoutes);
 app.use('/compras', compraRoutes);
 app.use('/ventas', ventaRoutes);
-app.use('/Usuarios', usuarioRoutes);
+app.use('/api', usuarioRoutes);
 
 // Conexión a MongoDB
 mongoose
