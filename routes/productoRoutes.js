@@ -12,17 +12,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Crear un nuevo producto/servicio
-router.post('/', async (req, res) => {
-  try {
-    const productoServicio = new ProductoServicio(req.body);
-    await productoServicio.save();
-    res.status(201).send(productoServicio);
-  } catch (error) {
-    res.status(400).send({ error: 'Error al crear el producto/servicio', details: error.message });
-  }
-});
-
 // Obtener un producto/servicio por ID
 router.get('/:id', async (req, res) => {
   try {
@@ -33,6 +22,17 @@ router.get('/:id', async (req, res) => {
     res.status(200).send(productoServicio);
   } catch (error) {
     res.status(500).send({ error: 'Error al obtener el producto/servicio', details: error.message });
+  }
+});
+
+// Crear un nuevo producto/servicio
+router.post('/', async (req, res) => {
+  try {
+    const productoServicio = new ProductoServicio(req.body);
+    await productoServicio.save();
+    res.status(201).send(productoServicio);
+  } catch (error) {
+    res.status(400).send({ error: 'Error al crear el producto/servicio', details: error.message });
   }
 });
 
@@ -49,18 +49,17 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Eliminar un producto/servicio existente
+// Eliminar un producto/servicio (puede ser marcado como inactivo en lugar de eliminar)
 router.delete('/:id', async (req, res) => {
   try {
-    const productoServicio = await ProductoServicio.findByIdAndDelete(req.params.id);
+    const productoServicio = await ProductoServicio.findByIdAndUpdate(req.params.id, { activo: false }, { new: true });
     if (!productoServicio) {
       return res.status(404).send({ error: 'Producto/Servicio no encontrado' });
     }
     res.status(200).send(productoServicio);
   } catch (error) {
-    res.status(500).send({ error: 'Error al eliminar el producto/servicio', details: error.message });
+    res.status(400).send({ error: 'Error al eliminar el producto/servicio', details: error.message });
   }
 });
 
 module.exports = router;
-
