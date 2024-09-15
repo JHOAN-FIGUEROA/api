@@ -1,67 +1,66 @@
 const express = require('express');
 const router = express.Router();
-const Compra = require('../models/Compra');
+const ProductoServicio = require('../models/ProductoServicio');
 
-// Obtener todas las compras
+// Obtener todos los productos/servicios
 router.get('/', async (req, res) => {
   try {
-    const compras = await Compra.find();
-    res.status(200).send(compras);
+    const productosServicios = await ProductoServicio.find();
+    res.status(200).send(productosServicios);
   } catch (error) {
-    res.status(500).send({ error: 'Error al obtener las compras', details: error.message });
+    res.status(500).send({ error: 'Error al obtener los productos/servicios', details: error.message });
   }
 });
 
-// Crear una nueva compra
+// Crear un nuevo producto/servicio
 router.post('/', async (req, res) => {
   try {
-    const compra = new Compra(req.body);
-    await compra.save();
-    res.status(201).send(compra);
+    const productoServicio = new ProductoServicio(req.body);
+    await productoServicio.save();
+    res.status(201).send(productoServicio);
   } catch (error) {
-    res.status(400).send({ error: 'Error al crear la compra', details: error.message });
+    res.status(400).send({ error: 'Error al crear el producto/servicio', details: error.message });
   }
 });
 
-// Obtener una compra por ID
+// Obtener un producto/servicio por ID
 router.get('/:id', async (req, res) => {
   try {
-    const compra = await Compra.findById(req.params.id);
-    if (!compra) {
-      return res.status(404).send({ error: 'Compra no encontrada' });
+    const productoServicio = await ProductoServicio.findById(req.params.id);
+    if (!productoServicio) {
+      return res.status(404).send({ error: 'Producto/Servicio no encontrado' });
     }
-    res.status(200).send(compra);
+    res.status(200).send(productoServicio);
   } catch (error) {
-    res.status(500).send({ error: 'Error al obtener la compra', details: error.message });
+    res.status(500).send({ error: 'Error al obtener el producto/servicio', details: error.message });
   }
 });
 
-// Actualizar una compra existente
+// Actualizar un producto/servicio existente
 router.put('/:id', async (req, res) => {
   try {
-    const compra = await Compra.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!compra) {
-      return res.status(404).send({ error: 'Compra no encontrada' });
+    const productoServicio = await ProductoServicio.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!productoServicio) {
+      return res.status(404).send({ error: 'Producto/Servicio no encontrado' });
     }
-    res.status(200).send(compra);
+    res.status(200).send(productoServicio);
   } catch (error) {
-    res.status(400).send({ error: 'Error al actualizar la compra', details: error.message });
+    res.status(400).send({ error: 'Error al actualizar el producto/servicio', details: error.message });
   }
 });
 
-// Anular una compra existente
-router.patch('/:id/anular', async (req, res) => {
+// Eliminar un producto/servicio existente
+router.delete('/:id', async (req, res) => {
   try {
-    const compra = await Compra.findById(req.params.id);
-    if (!compra) {
-      return res.status(404).send({ error: 'Compra no encontrada' });
+    const productoServicio = await ProductoServicio.findByIdAndDelete(req.params.id);
+    if (!productoServicio) {
+      return res.status(404).send({ error: 'Producto/Servicio no encontrado' });
     }
-    compra.anulado = true; 
-    await compra.save();
-    res.status(200).send(compra);
+    res.status(200).send(productoServicio);
   } catch (error) {
-    res.status(500).send({ error: 'Error al anular la compra', details: error.message });
+    res.status(500).send({ error: 'Error al eliminar el producto/servicio', details: error.message });
   }
 });
 
 module.exports = router;
+
