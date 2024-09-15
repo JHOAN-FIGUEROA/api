@@ -25,19 +25,14 @@ const usuarioSchema = new Schema({
     type: String,
     required: true,
   },
-  confirmarContraseña: {
-    type: String,
-    required: true,
-  },
 });
 
 // Middleware para encriptar la contraseña antes de guardar el usuario
-usuarioSchema.pre('save', async function(next) {
+usuarioSchema.pre('save', async function (next) {
   if (this.isModified('contraseña') || this.isNew) {
     try {
       const salt = await bcrypt.genSalt(saltRounds);
       this.contraseña = await bcrypt.hash(this.contraseña, salt);
-      this.confirmarContraseña = undefined; // No guardes la contraseña confirmada
       next();
     } catch (err) {
       next(err);
@@ -48,12 +43,11 @@ usuarioSchema.pre('save', async function(next) {
 });
 
 // Método para comparar contraseñas
-usuarioSchema.methods.comparePassword = async function(candidatePassword) {
+usuarioSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.contraseña);
 };
 
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 
 module.exports = Usuario;
-
 
