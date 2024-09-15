@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const Usuario = require('../models/Usuario'); // Asegúrate de que la ruta al modelo sea correcta
+const Usuario = require('../models/Usuario');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default_secret'; // Asegúrate de tener una clave secreta en tu archivo .env
+const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
 
 // Ruta para registrar un nuevo usuario
 router.post('/registro', async (req, res) => {
@@ -26,7 +26,7 @@ router.post('/registro', async (req, res) => {
     }
 
     // Crear un nuevo usuario
-    const nuevoUsuario = new Usuario({ nombre, correo, telefono, contraseña, confirmarContraseña });
+    const nuevoUsuario = new Usuario({ nombre, correo, telefono, contraseña });
     await nuevoUsuario.save();
 
     res.status(201).json({ message: 'Usuario registrado con éxito' });
@@ -62,4 +62,3 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
-
