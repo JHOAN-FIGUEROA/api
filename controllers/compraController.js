@@ -6,6 +6,7 @@ const getCompras = async (req, res) => {
     const compras = await Compra.find();
     res.json(compras);
   } catch (error) {
+    console.error('Error al obtener las compras:', error.message);
     res.status(500).json({ message: 'Error al obtener las compras' });
   }
 };
@@ -17,6 +18,7 @@ const createCompra = async (req, res) => {
     await nuevaCompra.save();
     res.status(201).json(nuevaCompra);
   } catch (error) {
+    console.error('Error al crear la compra:', error.message);
     res.status(400).json({ message: 'Error al crear la compra' });
   }
 };
@@ -28,6 +30,7 @@ const getCompraById = async (req, res) => {
     if (!compra) return res.status(404).json({ message: 'Compra no encontrada' });
     res.json(compra);
   } catch (error) {
+    console.error('Error al obtener la compra:', error.message);
     res.status(500).json({ message: 'Error al obtener la compra' });
   }
 };
@@ -36,8 +39,10 @@ const getCompraById = async (req, res) => {
 const updateCompra = async (req, res) => {
   try {
     const compraActualizada = await Compra.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!compraActualizada) return res.status(404).json({ message: 'Compra no encontrada' });
     res.json(compraActualizada);
   } catch (error) {
+    console.error('Error al actualizar la compra:', error.message);
     res.status(400).json({ message: 'Error al actualizar la compra' });
   }
 };
@@ -49,9 +54,11 @@ const anularCompra = async (req, res) => {
     if (!compraAnulada) return res.status(404).json({ message: 'Compra no encontrada' });
     res.json({ message: 'Compra anulada con éxito', compraAnulada });
   } catch (error) {
+    console.error('Error al anular la compra:', error.message);
     res.status(500).json({ message: 'Error al anular la compra' });
   }
 };
 
 module.exports = { getCompras, createCompra, getCompraById, updateCompra, anularCompra };
+
 
