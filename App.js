@@ -34,7 +34,7 @@ app.use('/clientes', clienteRoutes);
 app.use('/productos', productoRoutes);
 app.use('/compras', compraRoutes);
 app.use('/ventas', ventaRoutes);
-app.use('/usuarios', usuarioRoutes);
+app.use('/Usuarios', usuarioRoutes);
 
 // Conexión a MongoDB
 mongoose
