@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
-const userSchema = new Schema({
+const usuarioSchema = new Schema({
   nombre: {
     type: String,
     required: true,
@@ -32,7 +32,7 @@ const userSchema = new Schema({
 });
 
 // Middleware para encriptar la contraseña antes de guardar el usuario
-userSchema.pre('save', async function(next) {
+usuarioSchema.pre('save', async function(next) {
   if (this.isModified('contraseña') || this.isNew) {
     try {
       const salt = await bcrypt.genSalt(saltRounds);
@@ -48,11 +48,11 @@ userSchema.pre('save', async function(next) {
 });
 
 // Método para comparar contraseñas
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userioSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.contraseña);
 };
 
-const User = mongoose.model('User', userSchema);
+const Usuario = mongoose.model('Usuarios', usuarioSchema);
 
-module.exports = User;
+module.exports = Usuario;
 
