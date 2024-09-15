@@ -23,4 +23,32 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Actualizar un producto
+router.put('/:id', async (req, res) => {
+  try {
+    const producto = await Producto.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!producto) {
+      return res.status(404).send({ error: 'Producto no encontrado' });
+    }
+    res.send(producto);
+  } catch (error) {
+    res.status(400).send({ error: 'Error al actualizar el producto', details: error.message });
+  }
+});
+
+// Eliminar un producto
+router.delete('/:id', async (req, res) => {
+  try {
+    const producto = await Producto.findByIdAndDelete(req.params.id);
+    if (!producto) {
+      return res.status(404).send({ error: 'Producto no encontrado' });
+    }
+    res.send({ message: 'Producto eliminado' });
+  } catch (error) {
+    res.status(400).send({ error: 'Error al eliminar el producto', details: error.message });
+  }
+});
+
+
+
 module.exports = router;
