@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const ProductoServicio = require('../models/ProductoServicio');
+const ProductoServicio = require('../models/Producto');
 
 // Obtener todos los productos/servicios
 router.get('/', async (req, res) => {
