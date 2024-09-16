@@ -1,9 +1,6 @@
 const mongoose = require('mongoose'); 
 const ProductoServicioSchema = new mongoose.Schema({
- _id: {
-    type: String, // Usar String si prefieres manejar _id como un identificador personalizado
-    required: true
-  },
+ 
   nombre: {
     type: String,
     required: true
