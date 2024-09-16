@@ -23,6 +23,7 @@ const ProductoServicioSchema = new mongoose.Schema({
   }
 });
   
-  const ProductoServicio mongoose.model('ProductoServicio',ProductoServicioSchema);
+const ProductoServicio = mongoose.model('ProductoServicio', ProductoServicioSchema);
+
   module.exports = ProductoServicio;
   
