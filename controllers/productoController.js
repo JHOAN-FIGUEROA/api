@@ -1,4 +1,4 @@
-const Productos = require('../models/ProductoServicio');
+const ProductoServicio = require('../models/ProductoServicio');
 
 // Obtener todos los productos
 const getProductos = async (req, res) => {
@@ -13,14 +13,14 @@ const getProductos = async (req, res) => {
 // Crear un nuevo producto
 const createProducto = async (req, res) => {
   try {
-    const { _id, nombre, descripcion, precio, tipo } = req.body;
-    
+    const { nombre, descripcion, precio, tipo } = req.body;
+
     // Validación simple para asegurar que los campos requeridos están presentes
-    if (!_id || !nombre || !descripcion || !precio || !tipo) {
+    if (!nombre || !descripcion || !precio || !tipo) {
       return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
-    
-    const nuevoProducto = new Productos({ _id, nombre, descripcion, precio, tipo });
+
+    const nuevoProducto = new ProductoServicio({ nombre, descripcion, precio, tipo });
     await nuevoProducto.save();
     res.status(201).json(nuevoProducto);
   } catch (error) {
