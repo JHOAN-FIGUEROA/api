@@ -1,64 +1,63 @@
 const express = require('express');
 const router = express.Router();
-const ProductoServicio = require('../models/Productos');
+const productosController = require('../controllers/productosController');
 
-// Obtener todos los productos/servicios
+// Obtener todos los productos
 router.get('/', async (req, res) => {
   try {
-    const productosServicios = await Productos.find();
-    res.status(200).send(Productos);
+    const productos = await productosController.getProductos();
+    res.status(200).json(productos);
   } catch (error) {
-    res.status(500).send({ error: 'Error al obtener los productos/servicios', details: error.message });
+    res.status(500).json({ message: 'Error al obtener los productos' });
   }
 });
 
-// Obtener un producto/servicio por ID
+// Obtener un producto por ID
 router.get('/:id', async (req, res) => {
   try {
-    const productoServicio = await Productos.findById(req.params.id);
-    if (!Productos) {
-      return res.status(404).send({ error: 'Producto/Servicio no encontrado' });
+    const producto = await productosController.getProductoById(req.params.id);
+    if (!producto) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
     }
-    res.status(200).send(Productos);
+    res.status(200).json(producto);
   } catch (error) {
-    res.status(500).send({ error: 'Error al obtener el producto/servicio', details: error.message });
+    res.status(500).json({ message: 'Error al obtener el producto' });
   }
 });
 
-// Crear un nuevo producto/servicio
+// Crear un nuevo producto
 router.post('/', async (req, res) => {
   try {
-    const productoServicio = new Productos(req.body);
-    await Productos.save();
-    res.status(201).send(Productos);
+    const nuevoProducto = await productosController.createProducto(req.body);
+    res.status(201).json(nuevoProducto);
   } catch (error) {
-    res.status(400).send({ error: 'Error al crear el producto/servicio', details: error.message });
+    res.status(400).json({ message: 'Error al crear el producto', error: error.message });
   }
 });
 
-// Actualizar un producto/servicio existente
+// Actualizar un producto
 router.put('/:id', async (req, res) => {
   try {
-    const productoServicio = await Productos.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!Productos) {
-      return res.status(404).send({ error: 'Producto/Servicio no encontrado' });
+    const productoActualizado = await productosController.updateProducto(req.params.id, req.body);
+    if (!productoActualizado) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
     }
-    res.status(200).send(Productos);
+    res.status(200).json(productoActualizado);
   } catch (error) {
-    res.status(400).send({ error: 'Error al actualizar el producto/servicio', details: error.message });
+    res.status(400).json({ message: 'Error al actualizar el producto', error: error.message });
   }
 });
 
-// Eliminar un producto/servicio (puede ser marcado como inactivo en lugar de eliminar)
+// Eliminar un producto
 router.delete('/:id', async (req, res) => {
   try {
-    const productoServicio = await Productos.findByIdAndUpdate(req.params.id, { activo: false }, { new: true });
-    if (!Productos) {
-      return res.status(404).send({ error: 'Producto/Servicio no encontrado' });
+    const productoEliminado = await productosController.deleteProducto(req.params.id);
+    if (!productoEliminado) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
     }
-    res.status(200).send(Productos);
+    res.status(200).json({ message: 'Producto eliminado' });
   } catch (error) {
-    res.status(400).send({ error: 'Error al eliminar el producto/servicio', details: error.message });
+    res.status(500).json({ message: 'Error al eliminar el producto', error: error.message });
   }
 });
 
