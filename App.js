@@ -14,7 +14,7 @@ app.use(express.json());
 // Importación de rutas
 const proveedorRoutes = require('./routes/proveedorRoutes');
 const clienteRoutes = require('./routes/clienteRoutes');
-const productoRoutes = require('./routes/productoRoutes');
+const productoRoutes = require('./routes/productosRoutes'); 
 const compraRoutes = require('./routes/compraRoutes');
 const ventaRoutes = require('./routes/ventaRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
