@@ -1,9 +1,9 @@
-const Productos = require('../models/Productos');
+const Productos = require('../models/ProductoServicio');
 
 // Obtener todos los productos
 const getProductos = async (req, res) => {
   try {
-    const productos = await Productos.find();
+    const productos = await ProductoServicio.find();
     res.json(productos);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener los productos', error });
@@ -31,7 +31,7 @@ const createProducto = async (req, res) => {
 // Obtener un producto por ID
 const getProductoById = async (req, res) => {
   try {
-    const producto = await Productos.findById(req.params.id);
+    const producto = await ProductoServicio.findById(req.params.id);
     if (!producto) return res.status(404).json({ message: 'Producto no encontrado' });
     res.json(producto);
   } catch (error) {
@@ -44,7 +44,7 @@ const updateProducto = async (req, res) => {
   try {
     const { nombre, descripcion, precio, tipo } = req.body;
 
-    const productoActualizado = await Productos.findByIdAndUpdate(
+    const productoActualizado = await ProductoServicio.findByIdAndUpdate(
       req.params.id, 
       { nombre, descripcion, precio, tipo }, 
       { new: true }
@@ -60,7 +60,7 @@ const updateProducto = async (req, res) => {
 // Eliminar un producto
 const deleteProducto = async (req, res) => {
   try {
-    const productoEliminado = await Productos.findByIdAndDelete(req.params.id);
+    const productoEliminado = await ProductoServicio.findByIdAndDelete(req.params.id);
     if (!productoEliminado) return res.status(404).json({ message: 'Producto no encontrado' });
     res.json({ message: 'Producto eliminado correctamente' });
   } catch (error) {
