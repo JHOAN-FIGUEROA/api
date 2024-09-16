@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Producto = require('../models/ProductoServicio');
+
 // Crear un nuevo producto
 router.post('/', async (req, res) => {
   try {
@@ -8,7 +9,6 @@ router.post('/', async (req, res) => {
     await producto.save();
     res.status(201).send(producto);
   } catch (error) {
-    res.status(400).send(error);
     res.status(400).send({ error: 'Error al crear el producto', details: error.message });
   }
 });
@@ -19,12 +19,10 @@ router.get('/', async (req, res) => {
     const productos = await Producto.find();
     res.status(200).send(productos);
   } catch (error) {
-    res.status(500).send(error);
     res.status(500).send({ error: 'Error al obtener los productos', details: error.message });
   }
 });
 
-// Actualizar un producto
 // Actualizar un producto por ID
 router.put('/:id', async (req, res) => {
   try {
@@ -38,7 +36,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Eliminar un producto
 // Eliminar un producto por ID
 router.delete('/:id', async (req, res) => {
   try {
@@ -52,6 +49,5 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-
-
 module.exports = router;
+
