@@ -13,6 +13,10 @@ const ProductoServicioSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  cantidad: {
+    type: Number,
+    required: true
+  },
   tipo: {
     type: String,
     enum: ['Producto', 'Servicio'], // Enum para limitar los valores posibles
