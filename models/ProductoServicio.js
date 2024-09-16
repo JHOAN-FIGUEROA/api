@@ -1,5 +1,5 @@
 const mongoose = require('mongoose'); 
-const productosSchema = new mongoose.Schema({
+const ProductoServicioSchema = new mongoose.Schema({
  _id: {
     type: String, // Usar String si prefieres manejar _id como un identificador personalizado
     required: true
@@ -23,6 +23,6 @@ const productosSchema = new mongoose.Schema({
   }
 });
   
-  const Productos= mongoose.model('Productos', productosSchema);
-  module.exports = Productos;
+  const ProductoServicio mongoose.model('ProductoServicio',ProductoServicioSchema);
+  module.exports = ProductoServicio;
   
