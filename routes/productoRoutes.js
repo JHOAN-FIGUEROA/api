@@ -6,7 +6,7 @@ const {
   getCompraById,
   updateCompra,
   anularCompra
-} = require('../controllers/compraController');
+} = require('../controllers/productoController');
 
 // Obtener todas las compras
 router.get('/', async (req, res) => {
