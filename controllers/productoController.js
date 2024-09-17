@@ -1,4 +1,3 @@
-// controllers/productoController.js
 const ProductoServicio = require('../models/ProductoServicio');
 
 // Obtener todos los productos
@@ -14,13 +13,14 @@ const getProductos = async (req, res) => {
 // Crear un nuevo producto
 const createProducto = async (req, res) => {
   try {
-    const { nombre, descripcion, precio, cantidad, tipo } = req.body;
+    const { nombre, descripcion, precio, tipo } = req.body;
 
-    if (!nombre || !descripcion || !precio || !cantidad || !tipo) {
+    // Validación simple para asegurar que los campos requeridos están presentes
+    if (!nombre || !descripcion || !precio || !tipo) {
       return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
 
-    const nuevoProducto = new ProductoServicio({ nombre, descripcion, precio, cantidad, tipo });
+    const nuevoProducto = new ProductoServicio({ nombre, descripcion, precio, tipo });
     await nuevoProducto.save();
     res.status(201).json(nuevoProducto);
   } catch (error) {
@@ -42,11 +42,11 @@ const getProductoById = async (req, res) => {
 // Actualizar un producto
 const updateProducto = async (req, res) => {
   try {
-    const { nombre, descripcion, precio, cantidad, tipo } = req.body;
+    const { nombre, descripcion, precio, tipo } = req.body;
 
     const productoActualizado = await ProductoServicio.findByIdAndUpdate(
-      req.params.id,
-      { nombre, descripcion, precio, cantidad, tipo },
+      req.params.id, 
+      { nombre, descripcion, precio, tipo }, 
       { new: true }
     );
 
@@ -69,4 +69,3 @@ const deleteProducto = async (req, res) => {
 };
 
 module.exports = { getProductos, createProducto, getProductoById, updateProducto, deleteProducto };
-
