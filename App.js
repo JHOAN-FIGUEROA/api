@@ -15,7 +15,7 @@ app.use(express.json());
 const proveedorRoutes = require('./routes/proveedorRoutes');
 const clienteRoutes = require('./routes/clienteRoutes');
 const productoRoutes = require('./routes/productoRoutes'); 
-
+const compraRoutes = require('./routes/compraRoutes');
 const ventaRoutes = require('./routes/ventaRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 
@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 app.use('/proveedores', proveedorRoutes);
 app.use('/clientes', clienteRoutes);
 app.use('/productos', productoRoutes);
-
+app.use('/compras', compraRoutes);
 app.use('/ventas', ventaRoutes);
 app.use('/Usuarios', usuarioRoutes); // Asegúrate de que este prefijo coincida con el usado en `routes/usuarioRoutes.js`
 
