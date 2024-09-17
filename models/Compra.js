@@ -12,6 +12,9 @@ const CompraSchema = new Schema({
   precio: {
     type: Number,
     required: true,
+  },cantidad: {
+    type: Number,
+    required: true
   },
 
   proveedor_id: {
