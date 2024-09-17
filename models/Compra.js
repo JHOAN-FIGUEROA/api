@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
-
-const ProductoServicioSchema = new Schema({
-  producto_servicio_id: {
+const CompraSchema = new Schema({
+ compra_id: {
     type: String,
     required: true,
   },
@@ -14,9 +13,7 @@ const ProductoServicioSchema = new Schema({
     type: Number,
     required: true,
   },
-});
 
-const CompraSchema = new Schema({
   proveedor_id: {
     type: String,
     required: true,
@@ -29,7 +26,7 @@ const CompraSchema = new Schema({
     type: Number,
     required: true,
   },
-  productos_servicios: [ProductoServicioSchema],
+
 });
 
 const Compra = mongoose.model('Compra', CompraSchema);
