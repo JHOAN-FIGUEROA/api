@@ -55,8 +55,62 @@ const updateCompra = async (req, res) => {
     if (!compraActualizada) {
       if (!res.headersSent) {
         res.status(404).json({ message: 'Compra no encontrada' });
-  
+      }
+    } else {
+      if (!res.headersSent) {
+        res.status(200).json(compraActualizada);
+      }
+    }
+  } catch (error) {
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al actualizar la compra', details: error.message });
+    }
+  }
+};
 
+// Eliminar una compra
+const deleteCompra = async (req, res) => {
+  try {
+    const compraEliminada = await Compra.findByIdAndDelete(req.params.id);
+    if (!compraEliminada) {
+      if (!res.headersSent) {
+        res.status(404).json({ message: 'Compra no encontrada' });
+      }
+    } else {
+      if (!res.headersSent) {
+        res.status(200).json({ message: 'Compra eliminada correctamente' });
+      }
+    }
+  } catch (error) {
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al eliminar la compra', details: error.message });
+    }
+  }
+};
+
+// Anular una compra
+const anularCompra = async (req, res) => {
+  try {
+    const compra = await Compra.findById(req.params.id);
+    if (!compra) {
+      if (!res.headersSent) {
+        res.status(404).json({ message: 'Compra no encontrada' });
+      }
+    } else {
+      compra.anulado = true;
+      const compraAnulada = await compra.save();
+      if (!res.headersSent) {
+        res.status(200).json(compraAnulada);
+      }
+    }
+  } catch (error) {
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al anular la compra', details: error.message });
+    }
+  }
+};
+
+module.exports = { getCompras, createCompra, getCompraById, updateCompra, deleteCompra, anularCompra };
 
 
 
