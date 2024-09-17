@@ -19,7 +19,7 @@ const ProductoServicioSchema = new Schema({
 const CompraSchema = new Schema({
   proveedor_id: {
     type: String,
-    required: true,
+    
   },
   fecha: {
     type: Date,
@@ -29,7 +29,7 @@ const CompraSchema = new Schema({
     type: Number,
     required: true,
   },
-  productos_servicios: [ProductoServicioSchema],
+  
 });
 
 const Compra = mongoose.model('Compra', CompraSchema);
