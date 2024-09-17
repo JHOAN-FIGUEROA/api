@@ -9,7 +9,7 @@ const {
 } = require('../controllers/productoController');
 
 // Obtener todos los productos
-router.get('/Productos', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     await getProductos(req, res);
   } catch (error) {
@@ -18,7 +18,7 @@ router.get('/Productos', async (req, res) => {
 });
 
 // Crear un nuevo producto
-router.post('/Productos', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     await createProducto(req, res);
   } catch (error) {
@@ -27,7 +27,7 @@ router.post('/Productos', async (req, res) => {
 });
 
 // Obtener un producto por ID
-router.get('/Productos/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     await getProductoById(req, res);
   } catch (error) {
@@ -36,7 +36,7 @@ router.get('/Productos/:id', async (req, res) => {
 });
 
 // Actualizar un producto
-router.put('/Productos/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     await updateProducto(req, res);
   } catch (error) {
@@ -45,7 +45,7 @@ router.put('/Productos/:id', async (req, res) => {
 });
 
 // Eliminar un producto
-router.delete('/Productos/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     await deleteProducto(req, res);
   } catch (error) {
@@ -54,3 +54,4 @@ router.delete('/Productos/:id', async (req, res) => {
 });
 
 module.exports = router;
+
