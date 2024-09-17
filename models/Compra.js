@@ -1,10 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+
 const CompraSchema = new Schema({
- compra_id: {
-    type: Number,
-    required: true,
-  },
   producto: {
     type: String,
     required: true,
@@ -12,11 +9,11 @@ const CompraSchema = new Schema({
   precio: {
     type: Number,
     required: true,
-  },cantidad: {
-    type: Number,
-    required: true
   },
-
+  cantidad: {
+    type: Number,
+    required: true,
+  },
   proveedor: {
     type: String,
     required: true,
@@ -29,9 +26,9 @@ const CompraSchema = new Schema({
     type: Number,
     required: true,
   },
-
 });
 
 const Compra = mongoose.model('Compra', CompraSchema);
 
 module.exports = Compra;
+
