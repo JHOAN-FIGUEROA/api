@@ -17,7 +17,7 @@ const CompraSchema = new Schema({
     required: true
   },
 
-  proveedor_id: {
+  proveedor: {
     type: String,
     required: true,
   },
