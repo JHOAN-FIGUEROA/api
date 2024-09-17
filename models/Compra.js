@@ -5,7 +5,7 @@ const CompraSchema = new Schema({
     type: String,
     required: true,
   },
-  nombre: {
+  producto: {
     type: String,
     required: true,
   },
