@@ -14,7 +14,7 @@ const getCompras = async (req, res) => {
 // Crear una nueva compra
 const createCompra = async (req, res) => {
   try {
-    const nuevaCompra = new Compra(req.body);
+    const nuevaCompra = new Compra(req.body); // El _id se generará automáticamente
     await nuevaCompra.save();
     res.status(201).json(nuevaCompra);
   } catch (error) {
