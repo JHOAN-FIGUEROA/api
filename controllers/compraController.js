@@ -8,7 +8,9 @@ const getCompras = async (req, res) => {
     res.status(200).json(compras);
   } catch (error) {
     console.error('Error al obtener las compras:', error.message);
-    res.status(500).json({ message: 'Error al obtener las compras' });
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al obtener las compras' });
+    }
   }
 };
 
@@ -18,17 +20,22 @@ const createCompra = async (req, res) => {
     const nuevaCompra = new Compra(req.body);
     await nuevaCompra.save();
     
-    // Obtener el producto usando el producto_servicio_id
     const producto = await ProductoServicio.findById(nuevaCompra.producto_servicio_id);
     if (producto) {
       await ProductoServicio.findByIdAndUpdate(producto._id, { cantidad: producto.cantidad + nuevaCompra.cantidad });
     } else {
-      return res.status(404).json({ message: 'Producto no encontrado' });
+      if (!res.headersSent) {
+        return res.status(404).json({ message: 'Producto no encontrado' });
+      }
     }
     
-    res.status(201).json(nuevaCompra);
+    if (!res.headersSent) {
+      res.status(201).json(nuevaCompra);
+    }
   } catch (error) {
-    res.status(400).json({ message: 'Error al crear la compra', details: error.message });
+    if (!res.headersSent) {
+      res.status(400).json({ message: 'Error al crear la compra', details: error.message });
+    }
   }
 };
 
@@ -36,10 +43,19 @@ const createCompra = async (req, res) => {
 const getCompraById = async (req, res) => {
   try {
     const compra = await Compra.findById(req.params.id);
-    if (!compra) return res.status(404).json({ message: 'Compra no encontrada' });
-    res.status(200).json(compra);
+    if (!compra) {
+      if (!res.headersSent) {
+        return res.status(404).json({ message: 'Compra no encontrada' });
+      }
+    } else {
+      if (!res.headersSent) {
+        res.status(200).json(compra);
+      }
+    }
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener la compra', details: error.message });
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al obtener la compra', details: error.message });
+    }
   }
 };
 
@@ -47,10 +63,19 @@ const getCompraById = async (req, res) => {
 const updateCompra = async (req, res) => {
   try {
     const compraActualizada = await Compra.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!compraActualizada) return res.status(404).json({ message: 'Compra no encontrada' });
-    res.status(200).json(compraActualizada);
+    if (!compraActualizada) {
+      if (!res.headersSent) {
+        return res.status(404).json({ message: 'Compra no encontrada' });
+      }
+    } else {
+      if (!res.headersSent) {
+        res.status(200).json(compraActualizada);
+      }
+    }
   } catch (error) {
-    res.status(400).json({ message: 'Error al actualizar la compra', details: error.message });
+    if (!res.headersSent) {
+      res.status(400).json({ message: 'Error al actualizar la compra', details: error.message });
+    }
   }
 };
 
@@ -58,24 +83,33 @@ const updateCompra = async (req, res) => {
 const anularCompra = async (req, res) => {
   try {
     const compraAnulada = await Compra.findById(req.params.id);
-    if (!compraAnulada) return res.status(404).json({ message: 'Compra no encontrada' });
-    
-    // Obtener el producto usando el producto_servicio_id
-    const producto = await ProductoServicio.findById(compraAnulada.producto_servicio_id);
-    if (producto) {
-      await ProductoServicio.findByIdAndUpdate(producto._id, { cantidad: producto.cantidad - compraAnulada.cantidad });
+    if (!compraAnulada) {
+      if (!res.headersSent) {
+        return res.status(404).json({ message: 'Compra no encontrada' });
+      }
     } else {
-      return res.status(404).json({ message: 'Producto no encontrado' });
+      const producto = await ProductoServicio.findById(compraAnulada.producto_servicio_id);
+      if (producto) {
+        await ProductoServicio.findByIdAndUpdate(producto._id, { cantidad: producto.cantidad - compraAnulada.cantidad });
+      } else {
+        if (!res.headersSent) {
+          return res.status(404).json({ message: 'Producto no encontrado' });
+        }
+      }
+      await Compra.findByIdAndUpdate(req.params.id, { estado: 'anulada' }, { new: true });
+      if (!res.headersSent) {
+        res.status(200).json({ message: 'Compra anulada con éxito', compraAnulada });
+      }
     }
-
-    // Actualizar el estado de la compra a anulada
-    await Compra.findByIdAndUpdate(req.params.id, { estado: 'anulada' }, { new: true });
-    
-    res.status(200).json({ message: 'Compra anulada con éxito', compraAnulada });
   } catch (error) {
-    res.status(500).json({ message: 'Error al anular la compra', details: error.message });
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al anular la compra', details: error.message });
+    }
   }
 };
+
+module.exports = { getCompras, createCompra, getCompraById, updateCompra, anularCompra };
+
 
 module.exports = { getCompras, createCompra, getCompraById, updateCompra, anularCompra };
 
