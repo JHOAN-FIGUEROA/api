@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { getCompras, getCompraById, createCompra, updateCompra, deleteCompra } = require('../controllers/compraController');
-const auth = require('../models/auth');
 
-router.get('/', auth, getCompras);
-router.get('/:id', auth, getCompraById);
-router.post('/', auth, createCompra);
-router.put('/:id', auth, updateCompra);
-router.delete('/:id', auth, deleteCompra);
+
+router.get('/',  getCompras);
+router.get('/:id', getCompraById);
+router.post('/',  createCompra);
+router.put('/:id',  updateCompra);
+router.delete('/:id', deleteCompra);
 
 module.exports = router;
 
