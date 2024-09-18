@@ -26,6 +26,7 @@ const CompraSchema = new Schema({
     type: Number,
     required: true,
   },
+  estado: { type: String, enum: ['activa', 'anulada'], default: 'activa' }
 });
 
 const Compra = mongoose.model('Compra', CompraSchema);
