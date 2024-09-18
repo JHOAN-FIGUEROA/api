@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getCompras, getCompraById, createCompra, updateCompra, deleteCompra } = require('../controllers/compraController');
-const auth = require('../middleware/auth');
+const auth = require('../models/auth');
 
 router.get('/', auth, getCompras);
 router.get('/:id', auth, getCompraById);
