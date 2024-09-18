@@ -1,5 +1,5 @@
 const Compra = require('../models/Compra');
-const Producto = require('../models/Producto'); // Asegúrate de que la ruta sea correcta
+const ProductoServicio = require('../models/ProductoServicio'); // Asegúrate de que la ruta sea correcta
 
 // Obtener todas las compras
 const getCompras = async (req, res) => {
