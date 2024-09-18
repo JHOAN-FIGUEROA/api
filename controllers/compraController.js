@@ -1,5 +1,3 @@
-// Asegúrate de que la ruta sea correcta
-// Obtener todas las compras
 const Compra = require('../models/Compra');
 const Producto = require('../models/ProductoServicio');
 
@@ -18,7 +16,7 @@ const getNextCompraId = async () => {
     }
 };
 
-// Trae la lista completa de compras de la base de datos.
+// Obtener todas las compras
 exports.getCompras = async (req, res) => {
     try {
         const compras = await Compra.find();
@@ -28,7 +26,7 @@ exports.getCompras = async (req, res) => {
     }
 };
 
-// Busca una compra en la base de datos utilizando el ID proporcionado.
+// Obtener compra por ID
 exports.getCompraById = async (req, res) => {
     try {
         const compra = await Compra.findById(req.params.id);
@@ -41,7 +39,7 @@ exports.getCompraById = async (req, res) => {
     }
 };
 
-// Crea una nueva compra en la base de datos.
+// Crear nueva compra
 exports.createCompra = async (req, res) => {
     try {
         const { proveedor_id, fecha, total, estado, productos_servicios } = req.body;
@@ -64,7 +62,7 @@ exports.createCompra = async (req, res) => {
     }
 };
 
-// Actualiza la información de una compra existente en la base de datos utilizando su ID.
+// Actualizar compra
 exports.updateCompra = async (req, res) => {
     try {
         const compra = await Compra.findById(req.params.id);
@@ -88,8 +86,7 @@ exports.updateCompra = async (req, res) => {
                     throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
                 }
             }
-        }
-        else if ((estadoAnterior === 'pendiente' || estadoAnterior === 'cancelado') && nuevoEstado === 'completado') {
+        } else if ((estadoAnterior === 'pendiente' || estadoAnterior === 'cancelado') && nuevoEstado === 'completado') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
@@ -108,10 +105,9 @@ exports.updateCompra = async (req, res) => {
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
-}
+};
 
-
-// Elimina una compra de la base de datos utilizando su ID.
+// Eliminar compra
 exports.deleteCompra = async (req, res) => {
     try {
         const compra = await Compra.findByIdAndDelete(req.params.id);
@@ -123,6 +119,4 @@ exports.deleteCompra = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
-
 
