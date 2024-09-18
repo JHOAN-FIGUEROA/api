@@ -33,7 +33,7 @@ const getCompraById = async (req, res) => {
   }
 };
 
-// Actualizar una compra
+// Actualizar Compra
 const updateCompra = async (req, res) => {
   try {
     const compraActualizada = await Compra.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -44,11 +44,18 @@ const updateCompra = async (req, res) => {
   }
 };
 
-// Anular una compra
+// Anular Compra
 const anularCompra = async (req, res) => {
   try {
     const compraAnulada = await Compra.findByIdAndUpdate(req.params.id, { estado: 'anulada' }, { new: true });
     if (!compraAnulada) return res.status(404).json({ message: 'Compra no encontrada' });
+    
+    // Actualizar el stock del producto
+    const producto = await Producto.findById(compraAnulada.productoId);
+    if (producto) {
+      await Producto.findByIdAndUpdate(producto._id, { cantidad: producto.cantidad - compraAnulada.cantidad });
+    }
+    
     res.status(200).json({ message: 'Compra anulada con éxito', compraAnulada });
   } catch (error) {
     res.status(500).json({ message: 'Error al anular la compra', details: error.message });
