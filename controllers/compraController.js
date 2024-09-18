@@ -1,4 +1,5 @@
 const Compra = require('../models/Compra');
+const Producto = require('../models/Producto'); // Asegúrate de que la ruta sea correcta
 
 // Obtener todas las compras
 const getCompras = async (req, res) => {
@@ -16,6 +17,13 @@ const createCompra = async (req, res) => {
   try {
     const nuevaCompra = new Compra(req.body); // El _id se generará automáticamente
     await nuevaCompra.save();
+    
+    // Actualizar el stock del producto
+    const producto = await Producto.findById(nuevaCompra.productoId);
+    if (producto) {
+      await Producto.findByIdAndUpdate(producto._id, { cantidad: producto.cantidad + nuevaCompra.cantidad });
+    }
+    
     res.status(201).json(nuevaCompra);
   } catch (error) {
     res.status(400).json({ message: 'Error al crear la compra', details: error.message });
@@ -47,14 +55,17 @@ const updateCompra = async (req, res) => {
 // Anular Compra
 const anularCompra = async (req, res) => {
   try {
-    const compraAnulada = await Compra.findByIdAndUpdate(req.params.id, { estado: 'anulada' }, { new: true });
+    const compraAnulada = await Compra.findById(req.params.id);
     if (!compraAnulada) return res.status(404).json({ message: 'Compra no encontrada' });
     
-    // Actualizar el stock del producto
+    // Restar la cantidad del producto
     const producto = await Producto.findById(compraAnulada.productoId);
     if (producto) {
       await Producto.findByIdAndUpdate(producto._id, { cantidad: producto.cantidad - compraAnulada.cantidad });
     }
+
+    // Actualizar el estado de la compra a anulada
+    await Compra.findByIdAndUpdate(req.params.id, { estado: 'anulada' }, { new: true });
     
     res.status(200).json({ message: 'Compra anulada con éxito', compraAnulada });
   } catch (error) {
@@ -63,5 +74,6 @@ const anularCompra = async (req, res) => {
 };
 
 module.exports = { getCompras, createCompra, getCompraById, updateCompra, anularCompra };
+
 
 
