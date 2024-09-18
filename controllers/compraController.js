@@ -47,7 +47,7 @@ exports.createCompra = async (req, res) => {
         const nextId = await getNextCompraId();
 
         const compra = new Compra({
-            _id: nextId,
+            
             proveedor_id,
             fecha,
             total,
