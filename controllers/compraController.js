@@ -111,6 +111,6 @@ const anularCompra = async (req, res) => {
 module.exports = { getCompras, createCompra, getCompraById, updateCompra, anularCompra };
 
 
-module.exports = { getCompras, createCompra, getCompraById, updateCompra, anularCompra };
+
 
 
