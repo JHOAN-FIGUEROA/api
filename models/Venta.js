@@ -1,22 +1,19 @@
-const mongoose = require('mongoose'); 
+const mongoose = require('mongoose');
+
 const ventaSchema = new mongoose.Schema({
-     
-  cliente: { type: String, required: true },
-  fecha: { type: Date, required: true },
-  total: { type: Number, required: true },
-   estado: { type: String, default: 'activa' },
-},
-  productos_servicios: [
-    {
-      producto_servicio_id: String,
-      nombre: String,
-      precio: Number,
-      cantidad : Number,
-    }
-  ]
+    cliente_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente', required: true },
+    fecha: { type: Date, required: true },
+    total: { type: Number, required: true },
+    estado: { type: String, default: 'completada' },
+    productos_servicios: [
+        {
+            producto_servicio_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Producto', required: true },
+            nombre: { type: String, required: true },
+            precio: { type: Number, required: true },
+            cantidad: { type: Number, required: true },
+        }
+    ]
 });
 
 module.exports = mongoose.model('Venta', ventaSchema);
-  const Venta = mongoose.model('Venta', ventaSchema);
-  module.exports = Venta;
-  
+
