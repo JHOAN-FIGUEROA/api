@@ -12,9 +12,13 @@ const {
 router.get('/', async (req, res) => {
   try {
     const compras = await getCompras(req, res);
-    res.json(compras);
+    if (!res.headersSent) {
+      res.json(compras);
+    }
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener las compras.' });
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al obtener las compras.' });
+    }
   }
 });
 
@@ -22,9 +26,13 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const nuevaCompra = await createCompra(req, res);
-    res.status(201).json(nuevaCompra);
+    if (!res.headersSent) {
+      res.status(201).json(nuevaCompra);
+    }
   } catch (error) {
-    res.status(500).json({ message: 'Error al crear la compra.' });
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al crear la compra.' });
+    }
   }
 });
 
@@ -32,13 +40,17 @@ router.post('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const compra = await getCompraById(req, res);
-    if (compra) {
-      res.json(compra);
-    } else {
-      res.status(404).json({ message: 'Compra no encontrada.' });
+    if (!res.headersSent) {
+      if (compra) {
+        res.json(compra);
+      } else {
+        res.status(404).json({ message: 'Compra no encontrada.' });
+      }
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener la compra.' });
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al obtener la compra.' });
+    }
   }
 });
 
@@ -46,13 +58,17 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const compraActualizada = await updateCompra(req, res);
-    if (compraActualizada) {
-      res.json(compraActualizada);
-    } else {
-      res.status(404).json({ message: 'Compra no encontrada.' });
+    if (!res.headersSent) {
+      if (compraActualizada) {
+        res.json(compraActualizada);
+      } else {
+        res.status(404).json({ message: 'Compra no encontrada.' });
+      }
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error al actualizar la compra.' });
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al actualizar la compra.' });
+    }
   }
 });
 
@@ -60,15 +76,20 @@ router.put('/:id', async (req, res) => {
 router.patch('/:id/anular', async (req, res) => {
   try {
     const compraAnulada = await anularCompra(req, res);
-    if (compraAnulada) {
-      res.json(compraAnulada);
-    } else {
-      res.status(404).json({ message: 'Compra no encontrada.' });
+    if (!res.headersSent) {
+      if (compraAnulada) {
+        res.json(compraAnulada);
+      } else {
+        res.status(404).json({ message: 'Compra no encontrada.' });
+      }
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error al anular la compra.' });
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al anular la compra.' });
+    }
   }
 });
 
 module.exports = router;
+
 
