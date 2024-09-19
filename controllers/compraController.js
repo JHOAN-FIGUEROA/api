@@ -50,6 +50,12 @@ exports.createCompra = async (req, res) => {
     try {
         const { proveedor, fecha, total, estado, productos_servicios } = req.body;
 
+        // Validar que el proveedor y otros campos estén presentes
+        if (!proveedor || !fecha || !total || !productos_servicios.length) {
+            return res.status(400).json({ message: 'Datos de compra incompletos' });
+        }
+
+        // Crear la nueva compra
         const compra = new Compra({
             proveedor,
             fecha,
@@ -58,10 +64,9 @@ exports.createCompra = async (req, res) => {
             productos_servicios
         });
 
-        // Guardar la nueva compra
         const nuevaCompra = await compra.save();
 
-        // Si la compra es "completada", actualizamos el stock de los productos
+        // Actualizar el stock si el estado es 'completado'
         if (compra.estado === 'completado') {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
@@ -69,7 +74,7 @@ exports.createCompra = async (req, res) => {
                     productoDB.cantidad += producto.cantidad;
                     await productoDB.save();
                 } else {
-                    throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
+                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
                 }
             }
         }
@@ -143,4 +148,3 @@ exports.deleteCompra = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
