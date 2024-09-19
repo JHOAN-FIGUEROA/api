@@ -4,17 +4,29 @@ const Producto = require('../models/ProductoServicio');
 // Función para obtener el siguiente _id disponible
 const getNextCompraId = async () => {
     try {
+        // Obtiene la última compra ordenada por _id descendente
         const lastCompra = await Compra.findOne().sort({ _id: -1 }).exec();
+        
         if (lastCompra) {
-            const lastId = parseInt(lastCompra._id.replace('compra_', ''));
-            const nextId = lastId + 1;
-            return `compra_${nextId.toString().padStart(3, '0')}`;
+            // Verifica si el _id tiene el formato esperado antes de intentar hacer un replace
+            const lastId = parseInt(lastCompra._id.replace('compra_', ''), 10);
+            if (!isNaN(lastId)) {
+                const nextId = lastId + 1;
+                return `compra_${nextId.toString().padStart(3, '0')}`;
+            } else {
+                // Si no tiene el formato esperado, genera el primer ID de la serie
+                return 'compra_001';
+            }
+        } else {
+            // Si no hay compras, regresa el primer ID
+            return 'compra_001';
         }
-        return 'compra_001';
     } catch (error) {
+        console.error('Error al obtener el siguiente ID de compra:', error);
         throw new Error('Error al obtener el siguiente ID de compra');
     }
 };
+
 
 // Obtener todas las compras
 exports.getCompras = async (req, res) => {
