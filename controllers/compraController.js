@@ -44,7 +44,7 @@ exports.createCompra = async (req, res) => {
     try {
         const { proveedor_id, fecha, total, estado, productos_servicios } = req.body;
 
-        const nextId = await getNextCompraId();
+        
 
         const compra = new Compra({
             
