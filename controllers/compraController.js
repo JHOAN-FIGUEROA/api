@@ -71,7 +71,7 @@ exports.createCompra = async (req, res) => {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad += producto.cantidad;
+                    productoDB.cantidad += parseInt(producto.cantidad, 10); // Convertir cantidad a entero
                     await productoDB.save();
                 } else {
                     return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
@@ -105,7 +105,7 @@ exports.updateCompra = async (req, res) => {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad;
+                    productoDB.cantidad -= parseInt(producto.cantidad, 10); // Convertir cantidad a entero
                     await productoDB.save();
                 } else {
                     throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
@@ -118,7 +118,7 @@ exports.updateCompra = async (req, res) => {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad += producto.cantidad;
+                    productoDB.cantidad += parseInt(producto.cantidad, 10); // Convertir cantidad a entero
                     if (productoDB.cantidad < 0) {
                         return res.status(400).json({ message: `Stock insuficiente para el producto: ${producto.producto_servicio_id}` });
                     }
