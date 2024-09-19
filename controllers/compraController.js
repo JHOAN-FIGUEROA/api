@@ -42,16 +42,16 @@ exports.getCompraById = async (req, res) => {
 // Crear nueva compra
 exports.createCompra = async (req, res) => {
     try {
-        const { proveedor, fecha, total, estado, productos_servicios } = req.body;
+        const { proveedor_id, fecha, total, estado, productos_servicios } = req.body;
 
         const nextId = await getNextCompraId();
 
         const compra = new Compra({
             
-            proveedor,
+            proveedor_id,
             fecha,
             total,
-            estado: estado || 'pendiente',
+            estado: estado || 'completado',
             productos_servicios
         });
 
