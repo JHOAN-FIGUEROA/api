@@ -61,6 +61,7 @@ exports.createCompra = async (req, res) => {
         const compra = new Compra({
             
             proveedor,
+           
             fecha,
             total,
             estado: estado || 'completado',
