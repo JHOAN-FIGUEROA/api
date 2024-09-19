@@ -54,13 +54,13 @@ exports.getCompraById = async (req, res) => {
 // Crear nueva compra
 exports.createCompra = async (req, res) => {
     try {
-        const { proveedor, fecha, total, estado, productos_servicios } = req.body;
+        const {  fecha, total, estado, productos_servicios } = req.body;
 
         
 
         const compra = new Compra({
             
-            proveedor,
+            
             fecha,
             total,
             estado: estado || 'completado',
