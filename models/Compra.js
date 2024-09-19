@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const compraSchema = new mongoose.Schema({
     
-    proveedor: { type: String, required: true },
+    proveedor: { type: String,},
     fecha: { type: Date, required: true },
     total: { type: Number, required: true },
     estado: {
