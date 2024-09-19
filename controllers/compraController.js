@@ -97,6 +97,7 @@ exports.updateCompra = async (req, res) => {
         const estadoAnterior = compra.estado;
         const nuevoEstado = req.body.estado;
 
+        // Actualiza los datos de la compra
         Object.assign(compra, req.body);
         await compra.save();
 
@@ -105,8 +106,14 @@ exports.updateCompra = async (req, res) => {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad -= parseInt(producto.cantidad, 10); // Convertir cantidad a entero
-                    await productoDB.save();
+                    // Asegurarse de que la cantidad sea un número válido
+                    const cantidadADescontar = parseInt(producto.cantidad, 10);
+                    if (!isNaN(cantidadADescontar)) {
+                        productoDB.cantidad -= cantidadADescontar; // Resta el stock
+                        await productoDB.save();
+                    } else {
+                        return res.status(400).json({ message: `Cantidad inválida para el producto: ${producto.producto_servicio_id}` });
+                    }
                 } else {
                     throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
                 }
@@ -118,11 +125,13 @@ exports.updateCompra = async (req, res) => {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad += parseInt(producto.cantidad, 10); // Convertir cantidad a entero
-                    if (productoDB.cantidad < 0) {
-                        return res.status(400).json({ message: `Stock insuficiente para el producto: ${producto.producto_servicio_id}` });
+                    const cantidadAAgregar = parseInt(producto.cantidad, 10);
+                    if (!isNaN(cantidadAAgregar)) {
+                        productoDB.cantidad += cantidadAAgregar; // Suma el stock
+                        await productoDB.save();
+                    } else {
+                        return res.status(400).json({ message: `Cantidad inválida para el producto: ${producto.producto_servicio_id}` });
                     }
-                    await productoDB.save();
                 } else {
                     throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
                 }
