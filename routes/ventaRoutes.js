@@ -18,8 +18,3 @@ router.put('/:id', ventaController.updateVenta);
 router.delete('/:id', ventaController.deleteVenta);
 
 module.exports = router;
-
-});
-
-module.exports = router;
-
