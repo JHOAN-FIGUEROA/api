@@ -40,7 +40,6 @@ exports.getVentaById = async (req, res) => {
 };
 
 // Crear una nueva venta
-
 exports.createVenta = async (req, res) => {
   try {
     const { cliente, fecha, estado, productos_servicios, total } = req.body;
@@ -57,7 +56,7 @@ exports.createVenta = async (req, res) => {
     // Si la venta está en estado 'completada', actualizamos las cantidades
     if (estado === 'completada') {
       for (let item of productos_servicios) {
-        const producto = await ProductoServicio.findById(item.producto_servicio_id);
+        const producto = await Producto.findById(item.producto_servicio_id); // Corregido aquí
 
         if (!producto) {
           return res.status(404).json({ error: 'Producto no encontrado' });
