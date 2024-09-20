@@ -87,6 +87,7 @@ exports.createCompra = async (req, res) => {
 };
 
 // Actualizar compra
+// Actualizar compra
 exports.updateCompra = async (req, res) => {
     try {
         const compra = await Compra.findById(req.params.id);
@@ -109,8 +110,12 @@ exports.updateCompra = async (req, res) => {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
+                    console.log(`Restando ${producto.cantidad} a ${productoDB.nombre} (antes: ${productoDB.cantidad})`);
                     productoDB.cantidad -= producto.cantidad; // Resta el stock
                     await productoDB.save();
+                    console.log(`Nuevo stock de ${productoDB.nombre}: ${productoDB.cantidad}`);
+                } else {
+                    console.error(`Producto no encontrado: ${producto.producto_servicio_id}`);
                 }
             }
         }
@@ -120,8 +125,12 @@ exports.updateCompra = async (req, res) => {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
+                    console.log(`Sumando ${producto.cantidad} a ${productoDB.nombre} (antes: ${productoDB.cantidad})`);
                     productoDB.cantidad += producto.cantidad; // Suma el stock
                     await productoDB.save();
+                    console.log(`Nuevo stock de ${productoDB.nombre}: ${productoDB.cantidad}`);
+                } else {
+                    console.error(`Producto no encontrado: ${producto.producto_servicio_id}`);
                 }
             }
         }
