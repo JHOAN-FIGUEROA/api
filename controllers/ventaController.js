@@ -22,7 +22,7 @@ exports.getVentas = async (req, res) => {
         const ventas = await Venta.find();
         res.status(200).json(ventas);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Error al obtener las ventas', error: error.message });
     }
 };
 
@@ -35,47 +35,42 @@ exports.getVentaById = async (req, res) => {
         }
         res.status(200).json(venta);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Error al obtener la venta', error: error.message });
     }
 };
 
 // Crea una nueva venta en la base de datos.
 exports.createVenta = async (req, res) => {
     try {
-        const { cliente, fecha, total, estado, productos_servicios } = req.body;
+        const { cliente, fecha, total, estado = 'completada', productos_servicios } = req.body;
 
-        const nextId = await getNextVentaId();
+        // Validar productos
+        for (const producto of productos_servicios) {
+            const productoDB = await Producto.findById(producto.producto_servicio_id);
+            if (!productoDB) {
+                return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
+            }
+        }
 
-        const venta = new Venta({
-           
-            cliente,
-            fecha,
-            total,
-            estado: estado || 'completada',
-            productos_servicios
-        });
-
+        const nextId = await getNextVentaId(); // Considerar si realmente lo necesitas
+        const venta = new Venta({ cliente, fecha, total, estado, productos_servicios });
         const nuevaVenta = await venta.save();
 
         // Actualizar stock de productos solo si el estado es "completada"
-        if (venta.estado === 'completada') {
+        if (estado === 'completada') {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad;
-                    if (productoDB.cantidad < 0) {
-                        return res.status(400).json({ message: `Stock insuficiente para el producto: ${producto.producto_servicio_id}` });
-                    }
-                    await productoDB.save();
-                } else {
-                    throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
+                productoDB.cantidad -= producto.cantidad;
+                if (productoDB.cantidad < 0) {
+                    return res.status(400).json({ message: `Stock insuficiente para el producto: ${producto.producto_servicio_id}` });
                 }
+                await productoDB.save();
             }
         }
 
         res.status(201).json(nuevaVenta);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ message: 'Error al crear la venta', error: error.message });
     }
 };
 
@@ -93,37 +88,27 @@ exports.updateVenta = async (req, res) => {
         Object.assign(venta, req.body);
         await venta.save();
 
-        // Si el estado cambió de "completada" a "cancelada", agregar cantidad al stock
+        // Manejo de stock según el cambio de estado
+        const actualizarStock = async (cambio) => {
+            for (const producto of venta.productos_servicios) {
+                const productoDB = await Producto.findById(producto.producto_servicio_id);
+                if (productoDB) {
+                    productoDB.cantidad += cambio * producto.cantidad; // Ajustar cantidad según el cambio
+                    await productoDB.save();
+                } else {
+                    throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
+                }
+            }
+        };
+
         if (estadoAnterior === 'completada' && nuevoEstado === 'cancelada') {
-            for (const producto of venta.productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad += producto.cantidad;
-                    await productoDB.save();
-                } else {
-                    throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
-                }
-            }
-        }
-        // Si el estado cambió de "cancelada" a "completada", restar cantidad del stock
-        else if (estadoAnterior === 'cancelada' && nuevoEstado === 'completada') {
-            for (const producto of venta.productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad;
-                    if (productoDB.cantidad < 0) {
-                        return res.status(400).json({ message: `Stock insuficiente para el producto: ${producto.producto_servicio_id}` });
-                    }
-                    await productoDB.save();
-                } else {
-                    throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
-                }
-            }
+            await actualizarStock(1); // Devolver stock
+        } else if (estadoAnterior === 'cancelada' && nuevoEstado === 'completada') {
+            await actualizarStock(-1); // Quitar stock
         }
 
         res.status(200).json(venta);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ message: 'Error al actualizar la venta', error: error.message });
     }
 };
-
