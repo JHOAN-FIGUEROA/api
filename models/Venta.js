@@ -7,7 +7,7 @@ const ventaSchema = new mongoose.Schema({
     estado: { type: String, default: 'completada' },
     productos_servicios: [
         {
-            producto_servicio_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductoServicio', required: true },
+            
             nombre: { type: String, required: true },
             precio: { type: Number, required: true },
             cantidad: { type: Number, required: true },
