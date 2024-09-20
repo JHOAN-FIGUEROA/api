@@ -109,7 +109,6 @@ exports.updateVenta = async (req, res) => {
   }
 };
 
-// Eliminar (anular) una venta
 exports.deleteVenta = async (req, res) => {
     try {
         const venta = await Venta.findById(req.params.id);
@@ -126,15 +125,20 @@ exports.deleteVenta = async (req, res) => {
             const productoDB = await Producto.findById(producto.producto_servicio_id);
             if (productoDB) {
                 // Sumar la cantidad vendida de vuelta al inventario
-                productoDB.cantidad += producto.cantidad; // Asegúrate de que la cantidad es un número
+                productoDB.cantidad += producto.cantidad;
+
+                // Guardar el producto con la cantidad actualizada
                 await productoDB.save();
             } else {
+                // Manejo de errores si no se encuentra el producto
+                console.error(`Producto no encontrado: ${producto.producto_servicio_id}`);
                 throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
             }
         }
 
         res.status(200).json({ message: 'Venta anulada correctamente y productos devueltos al inventario.' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error al anular la venta:', error);
+        res.status(500).json({ message: 'Error al anular la venta.', error: error.message });
     }
 };
