@@ -88,6 +88,7 @@ exports.createCompra = async (req, res) => {
 
 // Actualizar compra
 // Actualizar compra
+// Actualizar compra
 exports.updateCompra = async (req, res) => {
     try {
         const compra = await Compra.findById(req.params.id);
@@ -102,35 +103,23 @@ exports.updateCompra = async (req, res) => {
         Object.assign(compra, req.body);
         await compra.save();
 
-        console.log('Estado anterior:', estadoAnterior);
-        console.log('Nuevo estado:', nuevoEstado);
-
-        // Si la compra estaba "completada" y ahora está "cancelada", revertir el stock
+        // Manejo del stock según el cambio de estado
         if (estadoAnterior === 'completado' && nuevoEstado === 'cancelado') {
+            // Revertir el stock
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    console.log(`Restando ${producto.cantidad} a ${productoDB.nombre} (antes: ${productoDB.cantidad})`);
-                    productoDB.cantidad -= producto.cantidad; // Resta el stock
+                    productoDB.cantidad -= producto.cantidad; 
                     await productoDB.save();
-                    console.log(`Nuevo stock de ${productoDB.nombre}: ${productoDB.cantidad}`);
-                } else {
-                    console.error(`Producto no encontrado: ${producto.producto_servicio_id}`);
                 }
             }
-        }
-
-        // Si la compra estaba "cancelada" o "pendiente" y ahora está "completada", actualizar el stock
-        else if ((estadoAnterior === 'cancelado' || estadoAnterior === 'pendiente') && nuevoEstado === 'completado') {
+        } else if ((estadoAnterior === 'pendiente' || estadoAnterior === 'cancelado') && nuevoEstado === 'completado') {
+            // Actualizar el stock
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    console.log(`Sumando ${producto.cantidad} a ${productoDB.nombre} (antes: ${productoDB.cantidad})`);
-                    productoDB.cantidad += producto.cantidad; // Suma el stock
+                    productoDB.cantidad += producto.cantidad;
                     await productoDB.save();
-                    console.log(`Nuevo stock de ${productoDB.nombre}: ${productoDB.cantidad}`);
-                } else {
-                    console.error(`Producto no encontrado: ${producto.producto_servicio_id}`);
                 }
             }
         }
