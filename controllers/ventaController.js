@@ -41,87 +41,73 @@ exports.getVentaById = async (req, res) => {
 
 // Crear una nueva venta
 
-
 exports.createVenta = async (req, res) => {
-    try {
-        const { cliente, fecha, total, estado, productos_servicios } = req.body;
+  try {
+    const { cliente, fecha, estado, productos_servicios, total } = req.body;
 
-        if (!cliente || !fecha || !total || !productos_servicios || !productos_servicios.length) {
-            return res.status(400).json({ message: 'Datos de venta incompletos' });
+    // Crear la venta
+    const newVenta = new Venta({
+      cliente,
+      fecha,
+      estado,
+      productos_servicios,
+      total,
+    });
+
+    // Si la venta está en estado 'completada', actualizamos las cantidades
+    if (estado === 'completada') {
+      for (let item of productos_servicios) {
+        const producto = await ProductoServicio.findById(item.producto_servicio_id);
+
+        if (!producto) {
+          return res.status(404).json({ error: 'Producto no encontrado' });
         }
 
-        for (const producto of productos_servicios) {
-            const productoDB = await Producto.findById(producto.producto_servicio_id);
-            if (!productoDB) {
-                return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
-            }
+        // Restar la cantidad del producto vendida
+        if (producto.cantidad < item.cantidad) {
+          return res.status(400).json({ error: `Cantidad insuficiente en el inventario del producto: ${producto.nombre}` });
         }
 
-        const venta = new Venta({ cliente, fecha, total, estado: estado || 'completada', productos_servicios });
-        const nuevaVenta = await venta.save();
+        producto.cantidad -= item.cantidad;
 
-        if (venta.estado === 'completada') {
-            for (const producto of productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                productoDB.cantidad -= producto.cantidad;
-                if (productoDB.cantidad < 0) {
-                    return res.status(400).json({ message: `Stock insuficiente para el producto: ${producto.producto_servicio_id}` });
-                }
-                await productoDB.save();
-            }
-        }
-
-        res.status(201).json(nuevaVenta);
-    } catch (error) {
-        console.error("Error al crear la venta:", error);
-        res.status(500).json({ message: 'Error al crear la venta', error: error.message });
+        // Guardar el producto con la cantidad actualizada
+        await producto.save();
+      }
     }
+
+    // Guardar la venta
+    await newVenta.save();
+
+    res.status(201).json(newVenta);
+  } catch (error) {
+    console.error('Error al crear la venta:', error);
+    res.status(400).json({ error: error.message });
+  }
 };
 
-// Otras funciones (getVentas, getVentaById, updateVenta, deleteVenta) se mantienen sin cambios.
-
-
-// Actualizar una venta existente
 exports.updateVenta = async (req, res) => {
-    try {
-        const venta = await Venta.findById(req.params.id);
-        if (!venta) {
-            return res.status(404).json({ message: 'Venta no encontrada' });
-        }
+  try {
+    const ventaId = req.params.id;
+    const { cliente, fecha, estado, productos_servicios, total } = req.body;
 
-        const estadoAnterior = venta.estado;
-        const nuevoEstado = req.body.estado;
-
-        // Actualiza los datos de la venta
-        Object.assign(venta, req.body);
-        await venta.save();
-
-        // Manejo de stock según el cambio de estado
-        if (estadoAnterior === 'completada' && nuevoEstado === 'cancelada') {
-            for (const producto of venta.productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad += producto.cantidad; // Devolver stock
-                    await productoDB.save();
-                }
-            }
-        } else if ((estadoAnterior === 'pendiente' || estadoAnterior === 'cancelada') && nuevoEstado === 'completada') {
-            for (const producto of venta.productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad; // Quitar stock
-                    if (productoDB.cantidad < 0) {
-                        return res.status(400).json({ message: `Stock insuficiente para el producto: ${producto.producto_servicio_id}` });
-                    }
-                    await productoDB.save();
-                }
-            }
-        }
-
-        res.status(200).json(venta);
-    } catch (error) {
-        res.status(400).json({ message: 'Error al actualizar la venta', error: error.message });
+    const venta = await Venta.findById(ventaId);
+    if (!venta) {
+      return res.status(404).json({ error: 'Venta no encontrada' });
     }
+
+    venta.cliente = cliente;
+    venta.fecha = fecha;
+    venta.estado = estado;
+    venta.productos_servicios = productos_servicios;
+    venta.total = total;
+
+    await venta.save();
+
+    res.status(200).json(venta);
+  } catch (error) {
+    console.error('Error al actualizar la venta:', error);
+    res.status(400).json({ error: error.message });
+  }
 };
 
 // Eliminar (anular) una venta
