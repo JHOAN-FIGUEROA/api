@@ -89,6 +89,7 @@ exports.createCompra = async (req, res) => {
 // Actualizar compra
 // Actualizar compra
 // Actualizar compra
+// Actualizar compra
 exports.updateCompra = async (req, res) => {
     try {
         const compra = await Compra.findById(req.params.id);
@@ -105,21 +106,25 @@ exports.updateCompra = async (req, res) => {
 
         // Manejo del stock según el cambio de estado
         if (estadoAnterior === 'completado' && nuevoEstado === 'cancelado') {
-            // Revertir el stock
+            // Revertir el stock si se cancela una compra previamente completada
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad; 
+                    productoDB.cantidad -= producto.cantidad; // Restar la cantidad que se había añadido
                     await productoDB.save();
+                } else {
+                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
                 }
             }
         } else if ((estadoAnterior === 'pendiente' || estadoAnterior === 'cancelado') && nuevoEstado === 'completado') {
-            // Actualizar el stock
+            // Actualizar el stock si se completa una compra que estaba pendiente o cancelada
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
                     productoDB.cantidad += producto.cantidad;
                     await productoDB.save();
+                } else {
+                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
                 }
             }
         }
@@ -130,7 +135,6 @@ exports.updateCompra = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-
 
 // Eliminar compra
 exports.deleteCompra = async (req, res) => {
