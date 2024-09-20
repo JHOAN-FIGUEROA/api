@@ -117,27 +117,23 @@ exports.deleteVenta = async (req, res) => {
             return res.status(404).json({ message: 'Venta no encontrada' });
         }
 
-        // Solo anular la venta si no está ya cancelada
-        if (venta.estado !== 'cancelada') {
-            // Anular la venta
-            venta.estado = 'cancelada';
-            await venta.save();
+        // Anular la venta
+        venta.estado = 'cancelada';
+        await venta.save();
 
-            // Actualizar stock de productos
-            for (const producto of venta.productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad += producto.cantidad;
-                    await productoDB.save();
-                } else {
-                    throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
-                }
+        // Devolver productos al inventario
+        for (const producto of venta.productos_servicios) {
+            const productoDB = await Producto.findById(producto.producto_servicio_id);
+            if (productoDB) {
+                // Sumar la cantidad vendida de vuelta al inventario
+                productoDB.cantidad += producto.cantidad; // Asegúrate de que la cantidad es un número
+                await productoDB.save();
+            } else {
+                throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
             }
-
-            res.status(200).json({ message: 'Venta anulada correctamente' });
-        } else {
-            res.status(400).json({ message: 'La venta ya está cancelada' });
         }
+
+        res.status(200).json({ message: 'Venta anulada correctamente y productos devueltos al inventario.' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
