@@ -40,16 +40,16 @@ exports.getVentaById = async (req, res) => {
 };
 
 // Crear una nueva venta
+
+
 exports.createVenta = async (req, res) => {
     try {
         const { cliente, fecha, total, estado, productos_servicios } = req.body;
 
-        // Validar que el cliente y otros campos estén presentes
-        if (!cliente || !fecha || !total || !productos_servicios.length) {
+        if (!cliente || !fecha || !total || !productos_servicios || !productos_servicios.length) {
             return res.status(400).json({ message: 'Datos de venta incompletos' });
         }
 
-        // Validar productos
         for (const producto of productos_servicios) {
             const productoDB = await Producto.findById(producto.producto_servicio_id);
             if (!productoDB) {
@@ -60,7 +60,6 @@ exports.createVenta = async (req, res) => {
         const venta = new Venta({ cliente, fecha, total, estado: estado || 'completada', productos_servicios });
         const nuevaVenta = await venta.save();
 
-        // Actualizar stock de productos solo si el estado es "completada"
         if (venta.estado === 'completada') {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
@@ -74,9 +73,13 @@ exports.createVenta = async (req, res) => {
 
         res.status(201).json(nuevaVenta);
     } catch (error) {
-        res.status(400).json({ message: 'Error al crear la venta', error: error.message });
+        console.error("Error al crear la venta:", error);
+        res.status(500).json({ message: 'Error al crear la venta', error: error.message });
     }
 };
+
+// Otras funciones (getVentas, getVentaById, updateVenta, deleteVenta) se mantienen sin cambios.
+
 
 // Actualizar una venta existente
 exports.updateVenta = async (req, res) => {
