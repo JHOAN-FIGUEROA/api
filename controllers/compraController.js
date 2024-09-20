@@ -106,7 +106,7 @@ exports.updateCompra = async (req, res) => {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad; // Resta la cantidad
+                    productoDB.cantidad -= parseInt(producto.cantidad, 10)// Resta la cantidad
                     await productoDB.save();
                 }
             }
