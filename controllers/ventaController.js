@@ -52,7 +52,7 @@ exports.createVenta = async (req, res) => {
             }
         }
 
-        const nextId = await getNextVentaId(); // Considerar si realmente lo necesitas
+        const nextId = await getNextVentaId();
         const venta = new Venta({ cliente, fecha, total, estado, productos_servicios });
         const nuevaVenta = await venta.save();
 
@@ -85,6 +85,7 @@ exports.updateVenta = async (req, res) => {
         const estadoAnterior = venta.estado;
         const nuevoEstado = req.body.estado;
 
+        // Actualiza los datos de la venta
         Object.assign(venta, req.body);
         await venta.save();
 
@@ -112,3 +113,4 @@ exports.updateVenta = async (req, res) => {
         res.status(400).json({ message: 'Error al actualizar la venta', error: error.message });
     }
 };
+
