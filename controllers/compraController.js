@@ -101,22 +101,26 @@ exports.updateCompra = async (req, res) => {
         Object.assign(compra, req.body);
         await compra.save();
 
-        // Si el estado cambia de "completado" a "cancelado", revertir el stock
+        console.log('Estado anterior:', estadoAnterior);
+        console.log('Nuevo estado:', nuevoEstado);
+
+        // Si la compra estaba "completada" y ahora está "cancelada", revertir el stock
         if (estadoAnterior === 'completado' && nuevoEstado === 'cancelado') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad -= parseInt(producto.cantidad, 10)// Resta la cantidad
+                    productoDB.cantidad -= producto.cantidad; // Resta el stock
                     await productoDB.save();
                 }
             }
         }
-        // Si el estado cambia de "cancelado" o "pendiente" a "completado", aumentar el stock
+
+        // Si la compra estaba "cancelada" o "pendiente" y ahora está "completada", actualizar el stock
         else if ((estadoAnterior === 'cancelado' || estadoAnterior === 'pendiente') && nuevoEstado === 'completado') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad += producto.cantidad; // Suma la cantidad
+                    productoDB.cantidad += producto.cantidad; // Suma el stock
                     await productoDB.save();
                 }
             }
