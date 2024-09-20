@@ -118,21 +118,28 @@ exports.deleteVenta = async (req, res) => {
             return res.status(404).json({ message: 'Venta no encontrada' });
         }
 
-        // Anular la venta
-        console.log('Anulando la venta...');
+        // Log para verificar que estamos anulando la venta
+        console.log('Anulando la venta:', venta._id);
+
+        // Cambiar el estado a 'cancelada'
         venta.estado = 'cancelada';
         await venta.save();
+        console.log(`Estado de la venta actualizado a: ${venta.estado}`);
 
         // Devolver productos al inventario
         for (const producto of venta.productos_servicios) {
+            console.log(`Procesando producto ${producto.producto_servicio_id}`);
+
             const productoDB = await Producto.findById(producto.producto_servicio_id);
+
             if (productoDB) {
                 // Sumar la cantidad vendida de vuelta al inventario
                 productoDB.cantidad += producto.cantidad;
+                console.log(`Devolviendo ${producto.cantidad} unidades del producto ${productoDB.nombre} al inventario.`);
 
                 // Guardar el producto con la cantidad actualizada
-                console.log(`Devolviendo ${producto.cantidad} al inventario del producto ${productoDB.nombre}`);
                 await productoDB.save();
+                console.log(`Producto ${productoDB.nombre} actualizado con nueva cantidad: ${productoDB.cantidad}`);
             } else {
                 // Manejo de errores si no se encuentra el producto
                 console.error(`Producto no encontrado: ${producto.producto_servicio_id}`);
