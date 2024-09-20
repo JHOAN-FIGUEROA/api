@@ -42,13 +42,13 @@ exports.getVentaById = async (req, res) => {
 // Crea una nueva venta en la base de datos.
 exports.createVenta = async (req, res) => {
     try {
-        const { cliente_id, fecha, total, estado, productos_servicios } = req.body;
+        const { cliente, fecha, total, estado, productos_servicios } = req.body;
 
         const nextId = await getNextVentaId();
 
         const venta = new Venta({
-            _id: nextId,
-            cliente_id,
+           
+            cliente,
             fecha,
             total,
             estado: estado || 'completada',
