@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 const ventaSchema = new mongoose.Schema({
-    cliente_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente', required: true },
+    cliente: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente', required: true },
     fecha: { type: Date, required: true },
     total: { type: Number, required: true },
     estado: { type: String, default: 'completada' },
     productos_servicios: [
         {
-            producto_servicio_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Producto', required: true },
+            producto_servicio_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductoServcio', required: true },
             nombre: { type: String, required: true },
             precio: { type: Number, required: true },
             cantidad: { type: Number, required: true },
