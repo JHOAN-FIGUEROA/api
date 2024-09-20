@@ -27,7 +27,7 @@ router.delete('/:id', async (req, res) => {
         await venta.save();
 
         // Actualizar stock de productos
-        for (const producto of venta.productos_servicios) {
+        for (const producto of venta.productos_servicio) {
             const productoDB = await Producto.findById(producto.producto_servicio_id);
             if (productoDB) {
                 productoDB.cantidad += producto.cantidad;
