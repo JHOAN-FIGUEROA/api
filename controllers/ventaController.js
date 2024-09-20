@@ -41,74 +41,76 @@ exports.getVentaById = async (req, res) => {
 
 // Crear una nueva venta
 exports.createVenta = async (req, res) => {
-  try {
-    const { cliente, fecha, estado, productos_servicios, total } = req.body;
+    try {
+        const { cliente, fecha, estado, productos_servicios, total } = req.body;
 
-    // Crear la venta
-    const newVenta = new Venta({
-      cliente,
-      fecha,
-      estado,
-      productos_servicios,
-      total,
-    });
+        // Crear la venta
+        const newVenta = new Venta({
+            cliente,
+            fecha,
+            estado,
+            productos_servicios,
+            total,
+        });
 
-    // Si la venta está en estado 'completada', actualizamos las cantidades
-    if (estado === 'completada') {
-      for (let item of productos_servicios) {
-        const producto = await Producto.findById(item.producto_servicio_id); // Corregido aquí
+        // Si la venta está en estado 'completada', actualizamos las cantidades
+        if (estado === 'completada') {
+            for (let item of productos_servicios) {
+                const producto = await Producto.findById(item.producto_servicio_id);
 
-        if (!producto) {
-          return res.status(404).json({ error: 'Producto no encontrado' });
+                if (!producto) {
+                    return res.status(404).json({ error: 'Producto no encontrado' });
+                }
+
+                // Restar la cantidad del producto vendida
+                if (producto.cantidad < item.cantidad) {
+                    return res.status(400).json({ error: `Cantidad insuficiente en el inventario del producto: ${producto.nombre}` });
+                }
+
+                producto.cantidad -= item.cantidad;
+
+                // Guardar el producto con la cantidad actualizada
+                await producto.save();
+            }
         }
 
-        // Restar la cantidad del producto vendida
-        if (producto.cantidad < item.cantidad) {
-          return res.status(400).json({ error: `Cantidad insuficiente en el inventario del producto: ${producto.nombre}` });
-        }
+        // Guardar la venta
+        await newVenta.save();
 
-        producto.cantidad -= item.cantidad;
-
-        // Guardar el producto con la cantidad actualizada
-        await producto.save();
-      }
+        res.status(201).json(newVenta);
+    } catch (error) {
+        console.error('Error al crear la venta:', error);
+        res.status(400).json({ error: error.message });
     }
-
-    // Guardar la venta
-    await newVenta.save();
-
-    res.status(201).json(newVenta);
-  } catch (error) {
-    console.error('Error al crear la venta:', error);
-    res.status(400).json({ error: error.message });
-  }
 };
 
+// Actualizar una venta
 exports.updateVenta = async (req, res) => {
-  try {
-    const ventaId = req.params.id;
-    const { cliente, fecha, estado, productos_servicios, total } = req.body;
+    try {
+        const ventaId = req.params.id;
+        const { cliente, fecha, estado, productos_servicios, total } = req.body;
 
-    const venta = await Venta.findById(ventaId);
-    if (!venta) {
-      return res.status(404).json({ error: 'Venta no encontrada' });
+        const venta = await Venta.findById(ventaId);
+        if (!venta) {
+            return res.status(404).json({ error: 'Venta no encontrada' });
+        }
+
+        venta.cliente = cliente;
+        venta.fecha = fecha;
+        venta.estado = estado;
+        venta.productos_servicios = productos_servicios;
+        venta.total = total;
+
+        await venta.save();
+
+        res.status(200).json(venta);
+    } catch (error) {
+        console.error('Error al actualizar la venta:', error);
+        res.status(400).json({ error: error.message });
     }
-
-    venta.cliente = cliente;
-    venta.fecha = fecha;
-    venta.estado = estado;
-    venta.productos_servicios = productos_servicios;
-    venta.total = total;
-
-    await venta.save();
-
-    res.status(200).json(venta);
-  } catch (error) {
-    console.error('Error al actualizar la venta:', error);
-    res.status(400).json({ error: error.message });
-  }
 };
 
+// Anular una venta
 exports.deleteVenta = async (req, res) => {
     try {
         const venta = await Venta.findById(req.params.id);
@@ -117,6 +119,7 @@ exports.deleteVenta = async (req, res) => {
         }
 
         // Anular la venta
+        console.log('Anulando la venta...');
         venta.estado = 'cancelada';
         await venta.save();
 
@@ -128,6 +131,7 @@ exports.deleteVenta = async (req, res) => {
                 productoDB.cantidad += producto.cantidad;
 
                 // Guardar el producto con la cantidad actualizada
+                console.log(`Devolviendo ${producto.cantidad} al inventario del producto ${productoDB.nombre}`);
                 await productoDB.save();
             } else {
                 // Manejo de errores si no se encuentra el producto
