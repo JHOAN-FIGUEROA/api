@@ -101,30 +101,23 @@ exports.updateCompra = async (req, res) => {
         Object.assign(compra, req.body);
         await compra.save();
 
-        // Si la compra estaba "completada" y ahora está "cancelada", revertir el stock
+        // Si el estado cambia de "completado" a "cancelado", revertir el stock
         if (estadoAnterior === 'completado' && nuevoEstado === 'cancelado') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    const cantidadADescontar = parseInt(producto.cantidad, 10);
-                    if (!isNaN(cantidadADescontar)) {
-                        productoDB.cantidad -= cantidadADescontar; // Resta el stock
-                        await productoDB.save();
-                    }
+                    productoDB.cantidad -= producto.cantidad; // Resta la cantidad
+                    await productoDB.save();
                 }
             }
         }
-
-        // Si la compra estaba "pendiente" o "cancelada" y ahora está "completada", actualizar el stock
-        else if ((estadoAnterior === 'pendiente' || estadoAnterior === 'cancelado') && nuevoEstado === 'completado') {
+        // Si el estado cambia de "cancelado" o "pendiente" a "completado", aumentar el stock
+        else if ((estadoAnterior === 'cancelado' || estadoAnterior === 'pendiente') && nuevoEstado === 'completado') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    const cantidadAAgregar = parseInt(producto.cantidad, 10);
-                    if (!isNaN(cantidadAAgregar)) {
-                        productoDB.cantidad += cantidadAAgregar; // Suma el stock
-                        await productoDB.save();
-                    }
+                    productoDB.cantidad += producto.cantidad; // Suma la cantidad
+                    await productoDB.save();
                 }
             }
         }
@@ -135,6 +128,7 @@ exports.updateCompra = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 // Eliminar compra
 exports.deleteCompra = async (req, res) => {
