@@ -16,7 +16,7 @@ const getNextVentaId = async () => {
     }
 };
 
-// Trae la lista completa de las ventas de la base de datos.
+// Obtener todas las ventas
 exports.getVentas = async (req, res) => {
     try {
         const ventas = await Venta.find();
@@ -26,7 +26,7 @@ exports.getVentas = async (req, res) => {
     }
 };
 
-// Busca una venta en la base de datos utilizando el ID proporcionado.
+// Obtener una venta por ID
 exports.getVentaById = async (req, res) => {
     try {
         const venta = await Venta.findById(req.params.id);
@@ -39,7 +39,7 @@ exports.getVentaById = async (req, res) => {
     }
 };
 
-// Crea una nueva venta en la base de datos.
+// Crear una nueva venta
 exports.createVenta = async (req, res) => {
     try {
         const { cliente, fecha, total, estado, productos_servicios } = req.body;
@@ -78,7 +78,7 @@ exports.createVenta = async (req, res) => {
     }
 };
 
-// Actualiza la información de una venta existente en la base de datos utilizando su ID.
+// Actualizar una venta existente
 exports.updateVenta = async (req, res) => {
     try {
         const venta = await Venta.findById(req.params.id);
@@ -121,16 +121,31 @@ exports.updateVenta = async (req, res) => {
     }
 };
 
-// Eliminar venta
+// Eliminar (anular) una venta
 exports.deleteVenta = async (req, res) => {
     try {
-        const venta = await Venta.findByIdAndDelete(req.params.id);
+        const venta = await Venta.findById(req.params.id);
         if (!venta) {
             return res.status(404).json({ message: 'Venta no encontrada' });
         }
-        res.status(200).json({ message: 'Venta eliminada' });
+
+        // Anular la venta
+        venta.estado = 'cancelada';
+        await venta.save();
+
+        // Actualizar stock de productos
+        for (const producto of venta.productos_servicios) {
+            const productoDB = await Producto.findById(producto.producto_servicio_id);
+            if (productoDB) {
+                productoDB.cantidad += producto.cantidad;
+                await productoDB.save();
+            } else {
+                throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
+            }
+        }
+
+        res.status(200).json({ message: 'Venta anulada correctamente' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
