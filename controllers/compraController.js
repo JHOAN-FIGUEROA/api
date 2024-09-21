@@ -45,7 +45,7 @@ exports.createCompra = async (req, res) => {
         const nuevaCompra = await compra.save();
 
         // Actualizar el stock si el estado es 'completado'
-        if (compra.estado === 'completado') {
+        if (nuevaCompra.estado === 'completado') {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
@@ -75,12 +75,12 @@ exports.updateCompra = async (req, res) => {
             return res.status(404).json({ error: 'Compra no encontrada' });
         }
 
-        // Lógica para actualizar el stock según el estado
+        // Ajustar el stock según el estado anterior
         if (compra.estado === 'completado') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad += producto.cantidad; // Reponer stock si se actualiza a 'completado'
+                    productoDB.cantidad += producto.cantidad; // Reponer stock
                     await productoDB.save();
                 }
             }
@@ -104,7 +104,7 @@ exports.updateCompra = async (req, res) => {
                 }
             }
         } else if (estado === 'cancelado') {
-            for (const producto of compra.productos_servicios) {
+            for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
                     productoDB.cantidad += producto.cantidad; // Reponer stock si se cancela
