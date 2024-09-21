@@ -27,19 +27,15 @@ exports.getCompraById = async (req, res) => {
 // Crear nueva compra
 exports.createCompra = async (req, res) => {
     try {
-        const { proveedor, fecha, estado, total, productos_servicios } = req.body;
-
-        // Validar que el proveedor y otros campos estén presentes
-        if (!proveedor || !fecha || !productos_servicios.length) {
-            return res.status(400).json({ message: 'Datos de compra incompletos' });
-        }
+        const { proveedor, fecha, estado,productos_servicios, total } = req.body;
 
         // Crear la nueva compra
         const compra = new Compra({
             proveedor,
             fecha,
             estado: estado || 'completado',
-            productos_servicios
+            productos_servicios,
+            total,
         });
 
         const nuevaCompra = await compra.save();
