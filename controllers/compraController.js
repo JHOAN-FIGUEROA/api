@@ -106,6 +106,8 @@ exports.updateCompra = async (req, res) => {
                 if (productoDB) {
                     productoDB.cantidad += producto.cantidad; // Aumentar la cantidad en el inventario
                     await productoDB.save();
+                } else {
+                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
                 }
             }
         }
@@ -125,7 +127,6 @@ exports.updateCompra = async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 };
-
 
 // Eliminar compra
 exports.deleteCompra = async (req, res) => {
