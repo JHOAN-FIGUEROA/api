@@ -85,6 +85,7 @@ exports.createVenta = async (req, res) => {
 };
 
 // Actualizar una venta
+// Actualizar una venta
 exports.updateVenta = async (req, res) => {
     try {
         const ventaId = req.params.id;
@@ -93,6 +94,17 @@ exports.updateVenta = async (req, res) => {
         const venta = await Venta.findById(ventaId);
         if (!venta) {
             return res.status(404).json({ error: 'Venta no encontrada' });
+        }
+
+        // Lógica para devolver productos al inventario si la venta se cancela
+        if (estado === 'cancelada') {
+            for (const producto of venta.productos_servicios) {
+                const productoDB = await Producto.findById(producto.producto_servicio_id);
+                if (productoDB) {
+                    productoDB.cantidad += producto.cantidad; // Aumentar la cantidad en el inventario
+                    await productoDB.save();
+                }
+            }
         }
 
         venta.cliente = cliente;
