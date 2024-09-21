@@ -5,8 +5,7 @@ const compraSchema = new mongoose.Schema({
     fecha: { type: Date, required: true },
     total: { type: Number, required: true },
     estado: { type: String, default: 'completada' },
-    },
-    productos_servicios: [
+    productos_servicios: [ // Mueve esta línea dentro del objeto del esquema
         {
             producto_servicio_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductoServicio', required: true },
             nombre: { type: String, required: true },
@@ -17,3 +16,4 @@ const compraSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Compra', compraSchema);
+
