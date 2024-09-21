@@ -4,10 +4,7 @@ const compraSchema = new mongoose.Schema({
     proveedor: { type: String, required: true },
     fecha: { type: Date, required: true },
     total: { type: Number, required: true },
-    estado: {
-        type: String,
-        enum: ['completado'],
-        default: 'completado'
+    estado: { type: String, default: 'completada' },
     },
     productos_servicios: [
         {
