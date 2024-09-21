@@ -27,7 +27,7 @@ exports.getCompraById = async (req, res) => {
 // Crear nueva compra
 exports.createCompra = async (req, res) => {
     try {
-        const { proveedor, fecha, estado, productos_servicios, total } = req.body;
+        const { proveedor, fecha, estado, productos_servicios,total } = req.body;
 
         // Crear la nueva compra
         const compra = new Compra({
@@ -41,27 +41,7 @@ exports.createCompra = async (req, res) => {
         const nuevaCompra = await compra.save();
 
         // Actualizar el stock según el estado de la compra
-        if (nuevaCompra.estado === 'completado') {
-            for (const producto of productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad += parseInt(producto.cantidad, 10); // Sumar al stock
-                    await productoDB.save();
-                } else {
-                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
-                }
-            }
-        } else if (nuevaCompra.estado === 'cancelado') {
-            for (const producto of productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad -= parseInt(producto.cantidad, 10); // Restar del stock
-                    await productoDB.save();
-                } else {
-                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
-                }
-            }
-        }
+        await updateStock(productos_servicios, nuevaCompra.estado === 'completado');
 
         res.status(201).json(nuevaCompra);
     } catch (error) {
@@ -82,23 +62,7 @@ exports.updateCompra = async (req, res) => {
         }
 
         // Ajustar el stock según el estado anterior
-        if (compra.estado === 'completado') {
-            for (const producto of compra.productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad; // Restar del stock
-                    await productoDB.save();
-                }
-            }
-        } else if (compra.estado === 'cancelado') {
-            for (const producto of compra.productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad += producto.cantidad; // Reponer stock si se cancela
-                    await productoDB.save();
-                }
-            }
-        }
+        await updateStock(compra.productos_servicios, compra.estado === 'completado', true);
 
         // Actualiza los datos de la compra
         compra.proveedor = proveedor;
@@ -107,27 +71,7 @@ exports.updateCompra = async (req, res) => {
         compra.productos_servicios = productos_servicios;
 
         // Ajustar el stock según el nuevo estado
-        if (estado === 'completado') {
-            for (const producto of productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad += parseInt(producto.cantidad, 10); // Sumar al stock
-                    await productoDB.save();
-                } else {
-                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
-                }
-            }
-        } else if (estado === 'cancelado') {
-            for (const producto of productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad -= parseInt(producto.cantidad, 10); // Restar del stock
-                    await productoDB.save();
-                } else {
-                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
-                }
-            }
-        }
+        await updateStock(productos_servicios, estado === 'completado');
 
         await compra.save();
 
@@ -135,6 +79,25 @@ exports.updateCompra = async (req, res) => {
     } catch (error) {
         console.error('Error al actualizar la compra:', error);
         res.status(400).json({ error: error.message });
+    }
+};
+
+// Función para actualizar el stock de productos
+const updateStock = async (productos_servicios, esSumar, esRevertir = false) => {
+    for (const producto of productos_servicios) {
+        const productoDB = await Producto.findById(producto.producto_servicio_id);
+        if (productoDB) {
+            if (esRevertir) {
+                // Revertir el stock anterior
+                productoDB.cantidad += esSumar ? producto.cantidad : -producto.cantidad;
+            } else {
+                // Actualizar el stock nuevo
+                productoDB.cantidad += esSumar ? producto.cantidad : -producto.cantidad;
+            }
+            await productoDB.save();
+        } else {
+            throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
+        }
     }
 };
 
