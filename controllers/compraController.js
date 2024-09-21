@@ -27,7 +27,7 @@ exports.getCompraById = async (req, res) => {
 // Crear nueva compra
 exports.createCompra = async (req, res) => {
     try {
-        const { proveedor, fecha, estado,productos_servicios, total } = req.body;
+        const { proveedor, fecha, estado, productos_servicios, total } = req.body;
 
         // Crear la nueva compra
         const compra = new Compra({
@@ -40,12 +40,22 @@ exports.createCompra = async (req, res) => {
 
         const nuevaCompra = await compra.save();
 
-        // Actualizar el stock si el estado es 'completado'
+        // Actualizar el stock según el estado de la compra
         if (nuevaCompra.estado === 'completado') {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad += parseInt(producto.cantidad, 10); // Restar del stock
+                    productoDB.cantidad += parseInt(producto.cantidad, 10); // Sumar al stock
+                    await productoDB.save();
+                } else {
+                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
+                }
+            }
+        } else if (nuevaCompra.estado === 'cancelado') {
+            for (const producto of productos_servicios) {
+                const productoDB = await Producto.findById(producto.producto_servicio_id);
+                if (productoDB) {
+                    productoDB.cantidad -= parseInt(producto.cantidad, 10); // Restar del stock
                     await productoDB.save();
                 } else {
                     return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
@@ -72,11 +82,19 @@ exports.updateCompra = async (req, res) => {
         }
 
         // Ajustar el stock según el estado anterior
-        if (compra.estado === 'cancelado') {
+        if (compra.estado === 'completado') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad; // Reponer stock
+                    productoDB.cantidad -= producto.cantidad; // Restar del stock
+                    await productoDB.save();
+                }
+            }
+        } else if (compra.estado === 'cancelado') {
+            for (const producto of compra.productos_servicios) {
+                const productoDB = await Producto.findById(producto.producto_servicio_id);
+                if (productoDB) {
+                    productoDB.cantidad += producto.cantidad; // Reponer stock si se cancela
                     await productoDB.save();
                 }
             }
@@ -89,11 +107,11 @@ exports.updateCompra = async (req, res) => {
         compra.productos_servicios = productos_servicios;
 
         // Ajustar el stock según el nuevo estado
-        if (estado === 'cancelado') {
+        if (estado === 'completado') {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad; // Restar del stock
+                    productoDB.cantidad += parseInt(producto.cantidad, 10); // Sumar al stock
                     await productoDB.save();
                 } else {
                     return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
@@ -103,8 +121,10 @@ exports.updateCompra = async (req, res) => {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad; // Reponer stock si se cancela
+                    productoDB.cantidad -= parseInt(producto.cantidad, 10); // Restar del stock
                     await productoDB.save();
+                } else {
+                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
                 }
             }
         }
