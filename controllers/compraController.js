@@ -53,7 +53,7 @@ exports.createCompra = async (req, res) => {
             total,
         });
 
-        // Si la compra está en estado 'completada', actualizamos las cantidades
+        // Si la compra está en estado 'completada', actualizamos las cantidades del inventario
         if (estado === 'completada') {
             for (let item of productos_servicios) {
                 const producto = await Producto.findById(item.producto_servicio_id);
@@ -91,12 +91,25 @@ exports.updateCompra = async (req, res) => {
             return res.status(404).json({ error: 'Compra no encontrada' });
         }
 
-        // Lógica para devolver productos al inventario si la compra se cancela
-        if (estado === 'cancelada') {
+        // Si la compra estaba en estado 'completada' antes de actualizar
+        if (compra.estado === 'completada') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad; // Disminuir la cantidad en el inventario
+                    // Si la compra estaba completada, devolvemos la cantidad previa al inventario
+                    productoDB.cantidad -= producto.cantidad;
+                    await productoDB.save();
+                }
+            }
+        }
+
+        // Si la nueva compra es 'completada', sumamos los productos comprados al inventario
+        if (estado === 'completada') {
+            for (const producto of productos_servicios) {
+                const productoDB = await Producto.findById(producto.producto_servicio_id);
+                if (productoDB) {
+                    // Sumar la nueva cantidad comprada al inventario
+                    productoDB.cantidad += producto.cantidad;
                     await productoDB.save();
                 }
             }
@@ -152,4 +165,3 @@ exports.deleteCompra = async (req, res) => {
         res.status(500).json({ message: 'Error al anular la compra.', error: error.message });
     }
 };
-
