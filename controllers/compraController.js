@@ -7,33 +7,13 @@ const updateStock = async (productos_servicios, agregar) => {
         const productoDB = await Producto.findById(producto.producto_servicio_id);
         if (productoDB) {
             productoDB.cantidad += agregar ? parseInt(producto.cantidad, 10) : -parseInt(producto.cantidad, 10); // Ajustar stock
+            if (productoDB.cantidad < 0) {
+                throw new Error(`Cantidad insuficiente en el inventario para el producto: ${productoDB.nombre}`);
+            }
             await productoDB.save();
         } else {
             throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
         }
-    }
-};
-
-// Obtener todas las compras
-exports.getCompras = async (req, res) => {
-    try {
-        const compras = await Compra.find();
-        res.status(200).json(compras);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-// Obtener compra por ID
-exports.getCompraById = async (req, res) => {
-    try {
-        const compra = await Compra.findById(req.params.id);
-        if (!compra) {
-            return res.status(404).json({ message: 'Compra no encontrada' });
-        }
-        res.status(200).json(compra);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
     }
 };
 
@@ -42,21 +22,18 @@ exports.createCompra = async (req, res) => {
     try {
         const { proveedor, fecha, estado, productos_servicios } = req.body;
 
-        // Validar que el proveedor y otros campos estén presentes
         if (!proveedor || !fecha || !productos_servicios.length) {
             return res.status(400).json({ message: 'Datos de compra incompletos' });
         }
 
-        // Calcular el total
         const total = productos_servicios.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
 
-        // Crear la nueva compra
         const compra = new Compra({
             proveedor,
             fecha,
             estado: estado || 'completado',
             productos_servicios,
-            total // Incluye el total aquí
+            total
         });
 
         const nuevaCompra = await compra.save();
@@ -89,21 +66,17 @@ exports.updateCompra = async (req, res) => {
             await updateStock(compra.productos_servicios, false); // Restar stock al cancelar
         }
 
-        // Calcular el nuevo total
         const total = productos_servicios.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
 
-        // Actualiza los datos de la compra
         compra.proveedor = proveedor;
         compra.fecha = fecha;
         compra.estado = estado;
         compra.productos_servicios = productos_servicios;
-        compra.total = total; // Actualiza el total
+        compra.total = total;
 
         // Ajustar el stock según el nuevo estado
         if (estado === 'completado') {
             await updateStock(productos_servicios, true); // Sumar stock
-        } else if (estado === 'cancelado') {
-            await updateStock(productos_servicios, false); // Restar stock
         }
 
         await compra.save();
