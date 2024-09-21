@@ -1,21 +1,6 @@
 const Compra = require('../models/Compra');
 const Producto = require('../models/ProductoServicio');
 
-// Función para obtener el siguiente _id disponible
-const getNextCompraId = async () => {
-    try {
-        const lastCompra = await Compra.findOne().sort({ _id: -1 }).exec();
-        if (lastCompra) {
-            const lastId = parseInt(lastCompra._id.replace('compra_', ''), 10);
-            return `compra_${(lastId + 1).toString().padStart(3, '0')}`;
-        }
-        return 'compra_001';
-    } catch (error) {
-        console.error('Error al obtener el siguiente ID de compra:', error);
-        throw new Error('Error al obtener el siguiente ID de compra');
-    }
-};
-
 // Obtener todas las compras
 exports.getCompras = async (req, res) => {
     try {
@@ -42,10 +27,10 @@ exports.getCompraById = async (req, res) => {
 // Crear nueva compra
 exports.createCompra = async (req, res) => {
     try {
-        const { proveedor, fecha, total, estado, productos_servicios } = req.body;
+        const { proveedor, fecha, estado, productos_servicios } = req.body;
 
         // Validar que el proveedor y otros campos estén presentes
-        if (!proveedor || !fecha || !total || !productos_servicios.length) {
+        if (!proveedor || !fecha || !productos_servicios.length) {
             return res.status(400).json({ message: 'Datos de compra incompletos' });
         }
 
@@ -53,7 +38,6 @@ exports.createCompra = async (req, res) => {
         const compra = new Compra({
             proveedor,
             fecha,
-            total,
             estado: estado || 'completado',
             productos_servicios
         });
@@ -65,7 +49,7 @@ exports.createCompra = async (req, res) => {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad += parseInt(producto.cantidad, 10); // Convertir cantidad a entero
+                    productoDB.cantidad -= parseInt(producto.cantidad, 10); // Restar del stock
                     await productoDB.save();
                 } else {
                     return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
@@ -84,7 +68,7 @@ exports.createCompra = async (req, res) => {
 exports.updateCompra = async (req, res) => {
     try {
         const compraId = req.params.id;
-        const { proveedor, fecha, estado, productos_servicios, total } = req.body;
+        const { proveedor, fecha, estado, productos_servicios } = req.body;
 
         const compra = await Compra.findById(compraId);
         if (!compra) {
@@ -92,22 +76,12 @@ exports.updateCompra = async (req, res) => {
         }
 
         // Lógica para actualizar el stock según el estado
-        if (estado === 'cancelado') {
+        if (compra.estado === 'completado') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad; // Restar la cantidad del inventario
+                    productoDB.cantidad += producto.cantidad; // Reponer stock si se actualiza a 'completado'
                     await productoDB.save();
-                }
-            }
-        } else if (estado === 'completado') {
-            for (const producto of productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad += producto.cantidad; // Aumentar la cantidad en el inventario
-                    await productoDB.save();
-                } else {
-                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
                 }
             }
         }
@@ -117,7 +91,27 @@ exports.updateCompra = async (req, res) => {
         compra.fecha = fecha;
         compra.estado = estado;
         compra.productos_servicios = productos_servicios;
-        compra.total = total;
+
+        // Ajustar el stock según el nuevo estado
+        if (estado === 'completado') {
+            for (const producto of productos_servicios) {
+                const productoDB = await Producto.findById(producto.producto_servicio_id);
+                if (productoDB) {
+                    productoDB.cantidad -= producto.cantidad; // Restar del stock
+                    await productoDB.save();
+                } else {
+                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
+                }
+            }
+        } else if (estado === 'cancelado') {
+            for (const producto of compra.productos_servicios) {
+                const productoDB = await Producto.findById(producto.producto_servicio_id);
+                if (productoDB) {
+                    productoDB.cantidad += producto.cantidad; // Reponer stock si se cancela
+                    await productoDB.save();
+                }
+            }
+        }
 
         await compra.save();
 
