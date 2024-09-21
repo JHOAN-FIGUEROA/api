@@ -27,7 +27,7 @@ exports.getCompraById = async (req, res) => {
 // Crear nueva compra
 exports.createCompra = async (req, res) => {
     try {
-        const { proveedor, fecha, estado, productos_servicios,total } = req.body;
+        const { proveedor, fecha, estado, productos_servicios } = req.body;
 
         // Crear la nueva compra
         const compra = new Compra({
@@ -35,13 +35,14 @@ exports.createCompra = async (req, res) => {
             fecha,
             estado: estado || 'completado',
             productos_servicios,
-            total,
         });
 
         const nuevaCompra = await compra.save();
 
-        // Actualizar el stock según el estado de la compra
-        await updateStock(productos_servicios, nuevaCompra.estado === 'completado');
+        // Actualizar el stock si el estado es 'completado'
+        if (nuevaCompra.estado === 'completado') {
+            await updateStock(productos_servicios, true);
+        }
 
         res.status(201).json(nuevaCompra);
     } catch (error) {
@@ -62,7 +63,9 @@ exports.updateCompra = async (req, res) => {
         }
 
         // Ajustar el stock según el estado anterior
-        await updateStock(compra.productos_servicios, compra.estado === 'completado', true);
+        if (compra.estado === 'completado') {
+            await updateStock(compra.productos_servicios, false); // Restar stock
+        }
 
         // Actualiza los datos de la compra
         compra.proveedor = proveedor;
@@ -71,7 +74,11 @@ exports.updateCompra = async (req, res) => {
         compra.productos_servicios = productos_servicios;
 
         // Ajustar el stock según el nuevo estado
-        await updateStock(productos_servicios, estado === 'completado');
+        if (estado === 'completado') {
+            await updateStock(productos_servicios, true); // Sumar stock
+        } else if (estado === 'cancelado') {
+            await updateStock(productos_servicios, false); // Restar stock
+        }
 
         await compra.save();
 
@@ -83,17 +90,11 @@ exports.updateCompra = async (req, res) => {
 };
 
 // Función para actualizar el stock de productos
-const updateStock = async (productos_servicios, esSumar, esRevertir = false) => {
+const updateStock = async (productos_servicios, esSumar) => {
     for (const producto of productos_servicios) {
         const productoDB = await Producto.findById(producto.producto_servicio_id);
         if (productoDB) {
-            if (esRevertir) {
-                // Revertir el stock anterior
-                productoDB.cantidad += esSumar ? producto.cantidad : +producto.cantidad;
-            } else {
-                // Actualizar el stock nuevo
-                productoDB.cantidad += esSumar ? producto.cantidad : -producto.cantidad;
-            }
+            productoDB.cantidad += esSumar ? producto.cantidad : -producto.cantidad;
             await productoDB.save();
         } else {
             throw new Error(`Producto no encontrado: ${producto.producto_servicio_id}`);
@@ -113,3 +114,4 @@ exports.deleteCompra = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
