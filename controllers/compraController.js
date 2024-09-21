@@ -63,7 +63,8 @@ exports.createCompra = async (req, res) => {
                 }
 
                 // Solo sumar la cantidad comprada al inventario
-                producto.cantidad += item.cantidad;
+                 // Convertir cantidad a entero
+                producto.cantidad += parseInt(item.cantidad, 10);
 
                 // Guardar el producto con la cantidad actualizada
                 await producto.save();
