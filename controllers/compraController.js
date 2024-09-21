@@ -7,15 +7,9 @@ const getNextCompraId = async () => {
         const lastCompra = await Compra.findOne().sort({ _id: -1 }).exec();
         if (lastCompra) {
             const lastId = parseInt(lastCompra._id.replace('compra_', ''), 10);
-            if (!isNaN(lastId)) {
-                const nextId = lastId + 1;
-                return `compra_${nextId.toString().padStart(3, '0')}`;
-            } else {
-                return 'compra_001';
-            }
-        } else {
-            return 'compra_001';
+            return `compra_${(lastId + 1).toString().padStart(3, '0')}`;
         }
+        return 'compra_001';
     } catch (error) {
         console.error('Error al obtener el siguiente ID de compra:', error);
         throw new Error('Error al obtener el siguiente ID de compra');
@@ -86,9 +80,6 @@ exports.createCompra = async (req, res) => {
     }
 };
 
-// Actualizar compra
-// Actualizar compra
-// Actualizar compra
 // Actualizar compra
 exports.updateCompra = async (req, res) => {
     try {
