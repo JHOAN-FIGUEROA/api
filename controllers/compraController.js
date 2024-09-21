@@ -89,7 +89,7 @@ const updateStock = async (productos_servicios, esSumar, esRevertir = false) => 
         if (productoDB) {
             if (esRevertir) {
                 // Revertir el stock anterior
-                productoDB.cantidad += esSumar ? producto.cantidad : -producto.cantidad;
+                productoDB.cantidad += esSumar ? producto.cantidad : +producto.cantidad;
             } else {
                 // Actualizar el stock nuevo
                 productoDB.cantidad += esSumar ? producto.cantidad : -producto.cantidad;
