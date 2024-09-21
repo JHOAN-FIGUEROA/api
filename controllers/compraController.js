@@ -93,7 +93,7 @@ exports.updateCompra = async (req, res) => {
         compra.productos_servicios = productos_servicios;
 
         // Ajustar el stock según el nuevo estado
-        if (estado === 'completado') {
+        if (estado === 'cancelado') {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
@@ -107,7 +107,7 @@ exports.updateCompra = async (req, res) => {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad += producto.cantidad; // Reponer stock si se cancela
+                    productoDB.cantidad -= producto.cantidad; // Reponer stock si se cancela
                     await productoDB.save();
                 }
             }
