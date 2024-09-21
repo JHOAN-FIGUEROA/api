@@ -27,7 +27,7 @@ exports.getCompraById = async (req, res) => {
 // Crear nueva compra
 exports.createCompra = async (req, res) => {
     try {
-        const { proveedor, fecha, estado, productos_servicios } = req.body;
+        const { proveedor, fecha, estado, productos_servicios,total } = req.body;
 
         // Crear la nueva compra
         const compra = new Compra({
@@ -35,6 +35,7 @@ exports.createCompra = async (req, res) => {
             fecha,
             estado: estado || 'completado',
             productos_servicios,
+            total,
         });
 
         const nuevaCompra = await compra.save();
