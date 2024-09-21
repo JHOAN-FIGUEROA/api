@@ -49,7 +49,7 @@ exports.createCompra = async (req, res) => {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad -= parseInt(producto.cantidad, 10); // Restar del stock
+                    productoDB.cantidad += parseInt(producto.cantidad, 10); // Restar del stock
                     await productoDB.save();
                 } else {
                     return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
@@ -76,11 +76,11 @@ exports.updateCompra = async (req, res) => {
         }
 
         // Ajustar el stock según el estado anterior
-        if (compra.estado === 'completado') {
+        if (compra.estado === 'cancelado') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    productoDB.cantidad += producto.cantidad; // Reponer stock
+                    productoDB.cantidad -= producto.cantidad; // Reponer stock
                     await productoDB.save();
                 }
             }
