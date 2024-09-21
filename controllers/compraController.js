@@ -91,36 +91,38 @@ exports.updateCompra = async (req, res) => {
             return res.status(404).json({ error: 'Compra no encontrada' });
         }
 
-        // Si la compra estaba en estado 'completada' antes de actualizar
+        // Restar del inventario la cantidad previa si la compra estaba 'completada'
         if (compra.estado === 'completada') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    // Si la compra estaba completada, devolvemos la cantidad previa al inventario
+                    // Restar la cantidad previa del inventario
                     productoDB.cantidad -= producto.cantidad;
                     await productoDB.save();
                 }
             }
         }
 
-        // Si la nueva compra es 'completada', sumamos los productos comprados al inventario
-        if (estado === 'completada') {
-            for (const producto of productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    // Sumar la nueva cantidad comprada al inventario
-                    productoDB.cantidad += producto.cantidad;
-                    await productoDB.save();
-                }
-            }
-        }
-
+        // Actualizamos los detalles de la compra
         compra.proveedor = proveedor;
         compra.fecha = fecha;
         compra.estado = estado;
         compra.productos_servicios = productos_servicios;
         compra.total = total;
 
+        // Si la nueva compra es 'completada', sumamos las nuevas cantidades al inventario
+        if (estado === 'completada') {
+            for (const producto of productos_servicios) {
+                const productoDB = await Producto.findById(producto.producto_servicio_id);
+                if (productoDB) {
+                    // Sumar la cantidad nueva comprada al inventario
+                    productoDB.cantidad += producto.cantidad;
+                    await productoDB.save();
+                }
+            }
+        }
+
+        // Guardar la compra actualizada
         await compra.save();
 
         res.status(200).json(compra);
