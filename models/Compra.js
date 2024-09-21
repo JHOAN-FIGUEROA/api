@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const compraSchema = new mongoose.Schema({
     proveedor: { type: String, required: true },
     fecha: { type: Date, required: true },
-    total: { type: Number, required: true },
+    total: { type: Number,  },
     estado: { type: String, default: 'completada' },
     productos_servicios: [ // Mueve esta línea dentro del objeto del esquema
         {
