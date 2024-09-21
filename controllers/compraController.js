@@ -83,49 +83,49 @@ exports.createCompra = async (req, res) => {
 // Actualizar compra
 exports.updateCompra = async (req, res) => {
     try {
-        const compra = await Compra.findById(req.params.id);
+        const compraId = req.params.id;
+        const { proveedor, fecha, estado, productos_servicios, total } = req.body;
+
+        const compra = await Compra.findById(compraId);
         if (!compra) {
-            return res.status(404).json({ message: 'Compra no encontrada' });
+            return res.status(404).json({ error: 'Compra no encontrada' });
         }
 
-        const estadoAnterior = compra.estado;
-        const nuevoEstado = req.body.estado;
+        // Lógica para actualizar el stock según el estado
+        if (estado === 'cancelado') {
+            for (const producto of compra.productos_servicios) {
+                const productoDB = await Producto.findById(producto.producto_servicio_id);
+                if (productoDB) {
+                    productoDB.cantidad -= producto.cantidad; // Restar la cantidad del inventario
+                    await productoDB.save();
+                }
+            }
+        } else if (estado === 'completado') {
+            for (const producto of productos_servicios) {
+                const productoDB = await Producto.findById(producto.producto_servicio_id);
+                if (productoDB) {
+                    productoDB.cantidad += producto.cantidad; // Aumentar la cantidad en el inventario
+                    await productoDB.save();
+                }
+            }
+        }
 
         // Actualiza los datos de la compra
-        Object.assign(compra, req.body);
-        await compra.save();
+        compra.proveedor = proveedor;
+        compra.fecha = fecha;
+        compra.estado = estado;
+        compra.productos_servicios = productos_servicios;
+        compra.total = total;
 
-        // Manejo del stock según el cambio de estado
-        if (estadoAnterior === 'completado' && nuevoEstado === 'cancelado') {
-            // Revertir el stock si se cancela una compra previamente completada
-            for (const producto of compra.productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad -= producto.cantidad; // Restar la cantidad que se había añadido
-                    await productoDB.save();
-                } else {
-                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
-                }
-            }
-        } else if ((estadoAnterior === 'pendiente' || estadoAnterior === 'cancelado') && nuevoEstado === 'completado') {
-            // Actualizar el stock si se completa una compra que estaba pendiente o cancelada
-            for (const producto of compra.productos_servicios) {
-                const productoDB = await Producto.findById(producto.producto_servicio_id);
-                if (productoDB) {
-                    productoDB.cantidad += producto.cantidad;
-                    await productoDB.save();
-                } else {
-                    return res.status(400).json({ message: `Producto no encontrado: ${producto.producto_servicio_id}` });
-                }
-            }
-        }
+        await compra.save();
 
         res.status(200).json(compra);
     } catch (error) {
         console.error('Error al actualizar la compra:', error);
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ error: error.message });
     }
 };
+
 
 // Eliminar compra
 exports.deleteCompra = async (req, res) => {
