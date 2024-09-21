@@ -48,13 +48,13 @@ exports.createCompra = async (req, res) => {
         const newCompra = new Compra({
             proveedor,
             fecha,
-            estado,
+            estado: 'completada', // Aseguramos que el estado se establece como completada
             productos_servicios,
             total,
         });
 
-        // Si la compra está en estado 'completada', actualizamos las cantidades del inventario
-        if (estado === 'completada') {
+        // Actualizamos las cantidades del inventario
+        if (newCompra.estado === 'completada') {
             for (let item of productos_servicios) {
                 const producto = await Producto.findById(item.producto_servicio_id);
 
@@ -62,7 +62,7 @@ exports.createCompra = async (req, res) => {
                     return res.status(404).json({ error: 'Producto no encontrado' });
                 }
 
-                // Sumar la cantidad comprada al inventario
+                // Solo sumar la cantidad comprada al inventario
                 producto.cantidad += item.cantidad;
 
                 // Guardar el producto con la cantidad actualizada
@@ -91,13 +91,15 @@ exports.updateCompra = async (req, res) => {
             return res.status(404).json({ error: 'Compra no encontrada' });
         }
 
-        // Restar del inventario la cantidad previa si la compra estaba 'completada'
+        // Si la compra estaba en estado 'completada' antes de actualizar
         if (compra.estado === 'completada') {
             for (const producto of compra.productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    // Restar la cantidad previa del inventario
-                    productoDB.cantidad -= producto.cantidad;
+                    // Restar la cantidad del inventario si se cancela
+                    if (estado === 'cancelada') {
+                        productoDB.cantidad -= producto.cantidad;
+                    }
                     await productoDB.save();
                 }
             }
@@ -110,12 +112,12 @@ exports.updateCompra = async (req, res) => {
         compra.productos_servicios = productos_servicios;
         compra.total = total;
 
-        // Si la nueva compra es 'completada', sumamos las nuevas cantidades al inventario
+        // Solo se suma al inventario si la nueva compra es 'completada'
         if (estado === 'completada') {
             for (const producto of productos_servicios) {
                 const productoDB = await Producto.findById(producto.producto_servicio_id);
                 if (productoDB) {
-                    // Sumar la cantidad nueva comprada al inventario
+                    // Solo sumar la cantidad nueva comprada al inventario
                     productoDB.cantidad += producto.cantidad;
                     await productoDB.save();
                 }
